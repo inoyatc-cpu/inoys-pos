@@ -124,12 +124,25 @@
         }
         .submit-btn:active { background: #1b5e20; }
 
-        /* === 2 & 3. 廚房 / 出餐 卡片樣式 === */
-        .kds-container { padding: 15px; display: flex; flex-wrap: wrap; gap: 15px; align-content: flex-start; width: 100%; }
+        /* === 2 & 3. 廚房 / 出餐 卡片樣式 (已修改為一排 3 單網格) === */
+        .kds-container { 
+            padding: 12px; 
+            display: grid; 
+            grid-template-columns: repeat(3, 1fr); /* 預設 3 欄 */
+            gap: 12px; 
+            width: 100%; 
+        }
+
+        /* 如果螢幕較窄 (例如手機直向)，自動切換回 1 欄 */
+        @media (max-width: 600px) {
+            .kds-container {
+                grid-template-columns: 1fr;
+            }
+        }
         
         .order-card { 
-            background: white; width: 100%; max-width: 360px; border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 10px solid #ff9800; padding: 16px; 
+            background: white; width: 100%; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 10px solid #ff9800; padding: 12px; 
             display: flex; flex-direction: column;
         }
         #kitchen .order-card { background: #ffffff; color: #000; }
@@ -138,16 +151,16 @@
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
         .order-card.kitchen-ready { border-top-color: #2e7d32; background: #e8f5e9; }
 
-        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 8px; }
-        .card-actions { display: flex; gap: 8px; margin: 10px 0; justify-content: flex-end; }
-        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 8px 14px; font-size: 1.05rem; font-weight: bold; cursor: pointer; color: #222; }
+        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+        .card-actions { display: flex; gap: 6px; margin: 8px 0; justify-content: flex-end; }
+        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 6px 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer; color: #222; }
         .action-btn.del { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
 
-        .card-items { margin: 12px 0; }
-        .card-item { display: flex; justify-content: space-between; font-size: 1.3rem; font-weight: bold; margin-bottom: 8px; }
-        .card-note { background: #fffde7; padding: 8px 12px; border-radius: 6px; color: #c62828; font-size: 1.15rem; font-weight: bold; margin-bottom: 12px; border: 1px solid #fff59d; word-break: break-all; }
+        .card-items { margin: 10px 0; }
+        .card-item { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; }
+        .card-note { background: #fffde7; padding: 6px 10px; border-radius: 6px; color: #c62828; font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; border: 1px solid #fff59d; word-break: break-all; }
         
-        .status-btn { width: 100%; padding: 16px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.35rem; color: white; cursor: pointer; }
+        .status-btn { width: 100%; padding: 14px 8px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.2rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cook { background: #ff9800; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
         .btn-serve { background: #2196F3; box-shadow: 0 4px 8px rgba(33,150,243,0.3); }
         .btn-done { background: #78909c; cursor: default; }
@@ -704,7 +717,7 @@
                             <span>${o.time}</span>
                         </div>
                         <div class="card-actions">
-                            <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改訂單</button>
+                            <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改</button>
                             <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
                         </div>
                         <div class="card-items">${itemsStr}</div>
@@ -755,7 +768,7 @@
                             <span>${o.time} ${isKReady ? '🍳<b style="color:#2e7d32;font-size:1.05rem;">[廚房已好]</b>' : ''}</span>
                         </div>
                         <div class="card-actions">
-                            <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改訂單</button>
+                            <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改</button>
                             <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
                         </div>
                         <div class="card-items">${itemsStr}</div>
@@ -768,8 +781,8 @@
                     </div>`;
             });
 
-            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;">暫無訂單</h3>';
-            document.getElementById('servingOrders').innerHTML = servingHtml || '<h3 style="color:#888;width:100%;text-align:center;padding-top:30px;">暫無訂單</h3>';
+            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
+            document.getElementById('servingOrders').innerHTML = servingHtml || '<h3 style="color:#888;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             
             // 渲染總覽數據
             document.getElementById('statRevenue').innerText = `$${totalRev}`;
