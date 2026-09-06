@@ -148,7 +148,7 @@
         #kitchen .order-card { background: #ffffff; color: #000; }
         
         .order-card.serving-card { border-top-color: #2196F3; }
-        .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
+        .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.8; }
         .order-card.kitchen-ready { border-top-color: #2e7d32; background: #e8f5e9; }
 
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
@@ -158,12 +158,14 @@
 
         .card-items { margin: 10px 0; }
         .card-item { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; }
+        .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
+        .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 6px; font-weight: 900; font-size: 1.25rem; color: #c62828; margin-bottom: 8px; }
         .card-note { background: #fffde7; padding: 6px 10px; border-radius: 6px; color: #c62828; font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; border: 1px solid #fff59d; word-break: break-all; }
         
         .status-btn { width: 100%; padding: 14px 8px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.2rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cook { background: #ff9800; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
         .btn-serve { background: #2196F3; box-shadow: 0 4px 8px rgba(33,150,243,0.3); }
-        .btn-done { background: #78909c; cursor: default; }
+        .btn-done { background: #616161; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
         /* === 4. 統計區塊樣式 === */
         .stats-box { padding: 20px; background: white; margin: 15px 10px; border-radius: 12px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
@@ -260,8 +262,7 @@
             <div class="cart-title">🛒 已選餐點列表</div>
             
             <div class="input-row">
-                <input type="number" id="callNo" class="form-input" placeholder="叫號 (數字)" inputmode="numeric" pattern="[0-9]*">
-                <input type="text" id="orderNote" class="form-input" placeholder="備註 (選填)">
+                <input type="text" id="orderNote" class="form-input" placeholder="備註 (選填，例如：少辣 / 走蔥)">
             </div>
 
             <div class="cart-items" id="cartList">
@@ -338,10 +339,6 @@
             <h3 style="margin-top:0; font-size:1.4rem; border-bottom:2px solid #ff9800; padding-bottom:8px;" id="editModalTitle">✏️ 修改訂單</h3>
             <input type="hidden" id="editOrderId">
             
-            <div style="margin-bottom:12px;">
-                <label style="font-weight:bold; font-size:1.1rem;">叫號：</label>
-                <input type="text" id="editCallNo" class="form-input" style="padding:8px; font-size:1.1rem;">
-            </div>
             <div style="margin-bottom:12px;">
                 <label style="font-weight:bold; font-size:1.1rem;">備註：</label>
                 <input type="text" id="editNote" class="form-input" style="padding:8px; font-size:1.1rem;">
@@ -514,7 +511,6 @@
         function submitOrder() {
             if (cart.length === 0) return alert('請先點餐！');
             
-            const callNo = document.getElementById('callNo').value.trim() || '無';
             const note = document.getElementById('orderNote').value.trim();
             
             const seqNum = getNextSeqNo();
@@ -525,7 +521,6 @@
 
             const orderData = {
                 seqNo: seq,
-                callNo: callNo,
                 items: cart,
                 total: document.getElementById('totalPrice').innerText,
                 note: note,
@@ -545,31 +540,40 @@
 
             alert(`✅ 單據已發送！\n流水號：#${seq}`);
             cart = [];
-            document.getElementById('callNo').value = '';
             document.getElementById('orderNote').value = '';
             renderCart();
             updateNextSeqDisplay();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function completeKitchen(id) {
+        // 👨‍🍳 廚房完成 / 復原狀態
+        function toggleKitchenStatus(id, currentStatus, seqNo) {
+            let nextStatus = 'done';
+            if (currentStatus === 'done') {
+                if (!confirm(`⚠️ 確定要將單號 #${seqNo} 改回【未完成】狀態嗎？`)) return;
+                nextStatus = 'pending';
+            }
+
             if (db) {
-                db.ref('orders/' + id + '/kitchenStatus').set('done');
+                db.ref('orders/' + id + '/kitchenStatus').set(nextStatus);
             } else {
-                if (localOrders[id]) localOrders[id].kitchenStatus = 'done';
+                if (localOrders[id]) localOrders[id].kitchenStatus = nextStatus;
                 renderAllViews(localOrders);
             }
         }
 
-        function completeServing(id) {
-            const updates = { kitchenStatus: 'done', servingStatus: 'done' };
+        // 🔔 出餐完成 / 復原狀態
+        function toggleServingStatus(id, currentStatus, seqNo) {
+            let nextStatus = 'done';
+            if (currentStatus === 'done') {
+                if (!confirm(`⚠️ 確定要將單號 #${seqNo} 改回【未完成】狀態嗎？`)) return;
+                nextStatus = 'pending';
+            }
+
             if (db) {
-                db.ref('orders/' + id).update(updates);
+                db.ref('orders/' + id + '/servingStatus').set(nextStatus);
             } else {
-                if (localOrders[id]) {
-                    localOrders[id].kitchenStatus = 'done';
-                    localOrders[id].servingStatus = 'done';
-                }
+                if (localOrders[id]) localOrders[id].servingStatus = nextStatus;
                 renderAllViews(localOrders);
             }
         }
@@ -588,7 +592,6 @@
         function openEditModal(order) {
             document.getElementById('editOrderId').value = order.id;
             document.getElementById('editModalTitle').innerText = `✏️ 修改訂單 #${order.seqNo}`;
-            document.getElementById('editCallNo').value = order.callNo === '無' ? '' : order.callNo;
             document.getElementById('editNote').value = order.note || '';
 
             editingCart = JSON.parse(JSON.stringify(order.items || []));
@@ -648,12 +651,10 @@
             if (!id) return;
             if (editingCart.length === 0) return alert('修改後的訂單不能沒有餐點！如需刪除請直接使用刪除按鈕。');
 
-            const callNo = document.getElementById('editCallNo').value.trim() || '無';
             const note = document.getElementById('editNote').value.trim();
             const total = document.getElementById('editTotalPrice').innerText;
 
             const updates = {
-                callNo: callNo,
                 note: note,
                 items: editingCart,
                 total: total
@@ -680,8 +681,6 @@
         }
 
         function renderAllViews(data) {
-            // 🎯 計算「今天 00:00:00」的時間戳 (Timestamp)
-            // 確保廚房、出餐及【統計資料】全部嚴格只顯示「今天」的數據！
             const now = new Date();
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
@@ -697,7 +696,7 @@
                     return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus, servingStatus: sStatus };
                 })
                 .filter(o => {
-                    // 🔒 嚴格過濾：1. 未刪除  2. 必須是「今天 00:00:00」之後產生的訂單
+                    // 🔒 嚴格過濾：未刪除 且 必須是「今天 00:00:00」之後產生的訂單
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
                     return !o.isDeleted && isToday;
                 });
@@ -714,19 +713,26 @@
 
             let kitchenHtml = '', servingHtml = '', totalRev = 0;
 
-            // 📊 僅針對「今日有效訂單」進行統計計算
             const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
             const itemStats = {};
 
+            // 🍳 渲染廚房視圖
             sortedKitchen.forEach(o => {
-                let itemsStr = o.items.map(i => `<div class="card-item"><span>${i.name}</span><b>x${i.qty}</b></div>`).join('');
+                let itemsStr = o.items.map(i => {
+                    const sub = (i.price || 0) * (i.qty || 0);
+                    return `<div class="card-item">
+                        <span>${i.name} <b>x${i.qty}</b></span>
+                        <span class="card-price-tag">$${sub}</span>
+                    </div>`;
+                }).join('');
+
                 const isKDone = (o.kitchenStatus === 'done');
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
                 kitchenHtml += `
                     <div class="order-card ${isKDone ? 'completed' : ''}">
                         <div class="card-header">
-                            <span>#${o.seqNo} (叫號:${o.callNo})</span>
+                            <span>#${o.seqNo}</span>
                             <span>${o.time}</span>
                         </div>
                         <div class="card-actions">
@@ -734,18 +740,31 @@
                             <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
                         </div>
                         <div class="card-items">${itemsStr}</div>
+                        <div class="card-total-row">
+                            <span>總計:</span>
+                            <span>$${o.total || 0}</span>
+                        </div>
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
                         ${
                             isKDone 
-                            ? `<button class="status-btn btn-done" disabled>✅ 已完成製作</button>`
-                            : `<button class="status-btn btn-cook" onclick="completeKitchen('${o.id}')">👨‍🍳 完成製作</button>`
+                            ? `<button class="status-btn btn-done" onclick="toggleKitchenStatus('${o.id}', 'done', '${o.seqNo}')">✅ 已完成製作 (按此改回未完成)</button>`
+                            : `<button class="status-btn btn-cook" onclick="toggleKitchenStatus('${o.id}', 'pending', '${o.seqNo}')">👨‍🍳 完成製作</button>`
                         }
                     </div>`;
             });
 
+            // 🔔 渲染出餐視圖與統計資料
             sortedServing.forEach(o => {
                 totalRev += parseFloat(o.total) || 0;
-                let itemsStr = o.items.map(i => `<div class="card-item"><span>${i.name}</span><b>x${i.qty}</b></div>`).join('');
+                
+                let itemsStr = o.items.map(i => {
+                    const sub = (i.price || 0) * (i.qty || 0);
+                    return `<div class="card-item">
+                        <span>${i.name} <b>x${i.qty}</b></span>
+                        <span class="card-price-tag">$${sub}</span>
+                    </div>`;
+                }).join('');
+
                 const isSDone = (o.servingStatus === 'done');
                 const isKReady = (o.kitchenStatus === 'done' && !isSDone);
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
@@ -757,18 +776,12 @@
                         const p = parseFloat(it.price || 0);
                         const subTotal = q * p;
 
-                        // 單品統計
-                        if (!itemStats[it.name]) {
-                            itemStats[it.name] = { qty: 0, rev: 0 };
-                        }
+                        if (!itemStats[it.name]) itemStats[it.name] = { qty: 0, rev: 0 };
                         itemStats[it.name].qty += q;
                         itemStats[it.name].rev += subTotal;
 
-                        // 分類統計
                         const cat = it.category || (ITEM_LOOKUP[it.name] ? ITEM_LOOKUP[it.name].category : '其他');
-                        if (!categoryStats[cat]) {
-                            categoryStats[cat] = { qty: 0, rev: 0 };
-                        }
+                        if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
                         categoryStats[cat].qty += q;
                         categoryStats[cat].rev += subTotal;
                     });
@@ -777,7 +790,7 @@
                 servingHtml += `
                     <div class="order-card serving-card ${isSDone ? 'completed' : (isKReady ? 'kitchen-ready' : '')}">
                         <div class="card-header">
-                            <span>#${o.seqNo} (叫號:${o.callNo})</span>
+                            <span>#${o.seqNo}</span>
                             <span>${o.time} ${isKReady ? '🍳<b style="color:#2e7d32;font-size:1.05rem;">[廚房已好]</b>' : ''}</span>
                         </div>
                         <div class="card-actions">
@@ -785,11 +798,15 @@
                             <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
                         </div>
                         <div class="card-items">${itemsStr}</div>
+                        <div class="card-total-row">
+                            <span>總計:</span>
+                            <span>$${o.total || 0}</span>
+                        </div>
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
                         ${
                             isSDone 
-                            ? `<button class="status-btn btn-done" disabled>✅ 已完成出餐</button>`
-                            : `<button class="status-btn btn-serve" onclick="completeServing('${o.id}')">🔔 完成出餐</button>`
+                            ? `<button class="status-btn btn-done" onclick="toggleServingStatus('${o.id}', 'done', '${o.seqNo}')">✅ 已完成出餐 (按此改回未完成)</button>`
+                            : `<button class="status-btn btn-serve" onclick="toggleServingStatus('${o.id}', 'pending', '${o.seqNo}')">🔔 完成出餐</button>`
                         }
                     </div>`;
             });
@@ -833,7 +850,6 @@
 
             // 📊 計算今天雲端最高流水號
             let maxSeqToday = 0;
-
             Object.keys(data).forEach(k => {
                 const o = data[k];
                 if (o.timestamp && o.timestamp >= startOfToday && o.seqNo) {
