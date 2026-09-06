@@ -124,11 +124,11 @@
         }
         .submit-btn:active { background: #1b5e20; }
 
-        /* === 2 & 3. 廚房 / 出餐 卡片樣式 (已修改為一排 3 單網格) === */
+        /* === 2 & 3. 廚房 / 出餐 卡片樣式 (一排 3 單網格) === */
         .kds-container { 
             padding: 12px; 
             display: grid; 
-            grid-template-columns: repeat(3, 1fr); /* 預設 3 欄 */
+            grid-template-columns: repeat(3, 1fr); /* iPad Mini 橫排 3 單 */
             gap: 12px; 
             width: 100%; 
         }
@@ -452,7 +452,7 @@
         let cart = [];
         let localOrders = {};
         let editingCart = [];
-        let currentMaxSeq = 0; // 全局同步雲端最高單號
+        let currentMaxSeq = 0; // 全局同步雲端當天最高單號
 
         function switchRole(role) {
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -676,6 +676,10 @@
         }
 
         function renderAllViews(data) {
+            // 🎯 計算「今天 00:00:00」的時間戳 (Timestamp)，確保跨日絕對自動清空畫面
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
             const activeOrders = Object.keys(data)
                 .map(k => {
                     const item = data[k];
@@ -687,7 +691,11 @@
 
                     return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus, servingStatus: sStatus };
                 })
-                .filter(o => !o.isDeleted);
+                .filter(o => {
+                    // 🔒 嚴格過濾：1. 未刪除  2. 必須是「今天 00:00:00」之後建立的訂單
+                    const isToday = o.timestamp && o.timestamp >= startOfToday;
+                    return !o.isDeleted && isToday;
+                });
 
             const sortedKitchen = [...activeOrders].sort((a, b) => {
                 if (a.kitchenStatus === b.kitchenStatus) return a.timestamp - b.timestamp;
@@ -819,14 +827,11 @@
             document.getElementById('statItemList').innerHTML = itemHtml;
 
             // 📊 計算今天雲端最高流水號
-            const todayStr = new Date().toLocaleDateString('zh-HK');
             let maxSeqToday = 0;
 
             Object.keys(data).forEach(k => {
                 const o = data[k];
-                const orderDate = new Date(o.timestamp).toLocaleDateString('zh-HK');
-                
-                if (orderDate === todayStr && o.seqNo) {
+                if (o.timestamp && o.timestamp >= startOfToday && o.seqNo) {
                     const sNum = parseInt(o.seqNo, 10);
                     if (!isNaN(sNum) && sNum > maxSeqToday) {
                         maxSeqToday = sNum;
