@@ -167,7 +167,8 @@
 
         /* === 4. 統計區塊樣式 === */
         .stats-box { padding: 20px; background: white; margin: 15px 10px; border-radius: 12px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; }
+        .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; display: flex; justify-content: space-between; align-items: center; }
+        .stats-subtitle { font-size: 0.9rem; color: #2e7d32; background: #e8f5e9; padding: 4px 8px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
         .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .stats-table th, .stats-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 1.15rem; }
         .stats-table th { background-color: #f5f5f5; font-weight: bold; }
@@ -288,14 +289,17 @@
     <div id="stats" class="page">
         <!-- 營業總覽 -->
         <div class="stats-box">
-            <h3 class="stats-title">📊 今日營業概況</h3>
-            <p>總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:2rem;">$0</strong></p>
-            <p>有效單數：<strong id="statCount" style="font-size:1.6rem;">0</strong> 單</p>
+            <h3 class="stats-title">
+                📊 營業概況
+                <span class="stats-subtitle">📅 預設：僅顯示今日</span>
+            </h3>
+            <p>今日總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:2rem;">$0</strong></p>
+            <p>今日有效單數：<strong id="statCount" style="font-size:1.6rem;">0</strong> 單</p>
         </div>
 
         <!-- 分類銷售統計 -->
         <div class="stats-box">
-            <h3 class="stats-title">📁 分類銷售統計</h3>
+            <h3 class="stats-title">📁 今日分類銷售統計</h3>
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -312,7 +316,7 @@
 
         <!-- 單品項目銷售統計 -->
         <div class="stats-box">
-            <h3 class="stats-title">🍔 項目銷售排行 (Top)</h3>
+            <h3 class="stats-title">🍔 今日項目銷售排行 (Top)</h3>
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -676,7 +680,8 @@
         }
 
         function renderAllViews(data) {
-            // 🎯 計算「今天 00:00:00」的時間戳 (Timestamp)，確保跨日絕對自動清空畫面
+            // 🎯 計算「今天 00:00:00」的時間戳 (Timestamp)
+            // 確保廚房、出餐及【統計資料】全部嚴格只顯示「今天」的數據！
             const now = new Date();
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
@@ -692,7 +697,7 @@
                     return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus, servingStatus: sStatus };
                 })
                 .filter(o => {
-                    // 🔒 嚴格過濾：1. 未刪除  2. 必須是「今天 00:00:00」之後建立的訂單
+                    // 🔒 嚴格過濾：1. 未刪除  2. 必須是「今天 00:00:00」之後產生的訂單
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
                     return !o.isDeleted && isToday;
                 });
@@ -709,7 +714,7 @@
 
             let kitchenHtml = '', servingHtml = '', totalRev = 0;
 
-            // 統計變數
+            // 📊 僅針對「今日有效訂單」進行統計計算
             const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
             const itemStats = {};
 
@@ -745,7 +750,7 @@
                 const isKReady = (o.kitchenStatus === 'done' && !isSDone);
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
-                // 進行餐點數量與金額計算
+                // 進行今日餐點數量與金額統計
                 if (o.items && Array.isArray(o.items)) {
                     o.items.forEach(it => {
                         const q = parseInt(it.qty || 0, 10);
@@ -792,11 +797,11 @@
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             document.getElementById('servingOrders').innerHTML = servingHtml || '<h3 style="color:#888;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             
-            // 渲染總覽數據
+            // 📊 渲染【當日】總覽數據
             document.getElementById('statRevenue').innerText = `$${totalRev}`;
             document.getElementById('statCount').innerText = activeOrders.length;
 
-            // 渲染分類統計表格
+            // 📊 渲染【當日】分類統計表格
             let catHtml = '';
             Object.keys(categoryStats).forEach(cName => {
                 const cData = categoryStats[cName];
@@ -808,12 +813,12 @@
             });
             document.getElementById('statCategoryList').innerHTML = catHtml;
 
-            // 渲染單品統計表格 (按銷售數量從高到低排序)
+            // 📊 渲染【當日】單品統計表格 (按銷售數量從高到低排序)
             let itemHtml = '';
             const sortedItemKeys = Object.keys(itemStats).sort((a, b) => itemStats[b].qty - itemStats[a].qty);
             
             if (sortedItemKeys.length === 0) {
-                itemHtml = '<tr><td colspan="3" style="text-align:center; color:#888;">暫無銷售數據</td></tr>';
+                itemHtml = '<tr><td colspan="3" style="text-align:center; color:#888;">今日暫無銷售數據</td></tr>';
             } else {
                 sortedItemKeys.forEach(iName => {
                     const iData = itemStats[iName];
