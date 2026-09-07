@@ -177,11 +177,18 @@
 
         /* === 4. 統計區塊樣式 === */
         .stats-box { padding: 20px; background: white; margin: 15px 10px; border-radius: 12px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; display: flex; justify-content: space-between; align-items: center; }
+        .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .stats-subtitle { font-size: 0.9rem; color: #2e7d32; background: #e8f5e9; padding: 4px 8px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
         .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
         .stats-table th, .stats-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 1.15rem; }
         .stats-table th { background-color: #f5f5f5; font-weight: bold; }
+        
+        .date-picker-box {
+            display: flex; align-items: center; gap: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; margin-top: 10px;
+        }
+        .date-input {
+            padding: 8px 12px; font-size: 1.1rem; border: 2px solid #ff9800; border-radius: 6px; font-weight: bold; outline: none; background: #fff;
+        }
 
         /* 修改訂單 Modal 彈窗 */
         #editModal {
@@ -297,19 +304,26 @@
 
     <!-- 4. 統計頁面 -->
     <div id="stats" class="page">
-        <!-- 營業總覽 -->
+        <!-- 營業總覽與日期選擇器 -->
         <div class="stats-box">
             <h3 class="stats-title">
                 📊 營業概況
-                <span class="stats-subtitle">📅 預設：僅顯示今日</span>
+                <span class="stats-subtitle" id="statDateLabel">📅 預設：今日</span>
             </h3>
-            <p>今日總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:2rem;">$0</strong></p>
-            <p>今日有效單數：<strong id="statCount" style="font-size:1.6rem;">0</strong> 單</p>
+            
+            <div class="date-picker-box">
+                <label style="font-weight:bold; font-size:1.1rem;">🗓️ 選擇查詢日期：</label>
+                <input type="date" id="statsDatePicker" class="date-input" onchange="onDateChange()">
+                <button onclick="resetToToday()" style="padding:8px 12px; background:#ff9800; border:none; color:white; font-weight:bold; border-radius:6px; cursor:pointer;">重置為今日</button>
+            </div>
+
+            <p style="margin-top:15px;">Selected Date 總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:2rem;">$0</strong></p>
+            <p>Selected Date 有效單數：<strong id="statCount" style="font-size:1.6rem;">0</strong> 單</p>
         </div>
 
         <!-- 分類銷售統計 -->
         <div class="stats-box">
-            <h3 class="stats-title">📁 今日分類銷售統計</h3>
+            <h3 class="stats-title">📁 分類銷售統計</h3>
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -326,7 +340,7 @@
 
         <!-- 單品項目銷售統計 -->
         <div class="stats-box">
-            <h3 class="stats-title">🍔 今日項目銷售排行 (Top)</h3>
+            <h3 class="stats-title">🍔 項目銷售排行 (Top)</h3>
             <table class="stats-table">
                 <thead>
                     <tr>
@@ -407,6 +421,16 @@
             '其他': 'cat-item-other'
         };
 
+        let currentRawData = {}; // 快取當前雲端或本地數據
+
+        function getTodayYMD() {
+            const now = new Date();
+            const y = now.getFullYear();
+            const m = String(now.getMonth() + 1).padStart(2, '0');
+            const d = String(now.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        }
+
         // 📌 排序函式：依菜單順序排列
         function sortCartByMenuOrder(cartArray) {
             return cartArray.sort((a, b) => {
@@ -447,6 +471,9 @@
             document.getElementById('accessPass').addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') checkPassword();
             });
+
+            // 初始化日期選擇器預設為今天
+            document.getElementById('statsDatePicker').value = getTodayYMD();
         });
 
         // Firebase 設定
@@ -692,18 +719,39 @@
             alert('✅ 訂單內容已更新！');
         }
 
+        function onDateChange() {
+            renderAllViews(currentRawData);
+        }
+
+        function resetToToday() {
+            document.getElementById('statsDatePicker').value = getTodayYMD();
+            renderAllViews(currentRawData);
+        }
+
         if (db) {
             db.ref('orders').on('value', (snapshot) => {
                 const data = snapshot.val() || {};
+                currentRawData = data;
                 renderAllViews(data);
             });
         }
 
         function renderAllViews(data) {
+            currentRawData = data;
             const now = new Date();
             const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
 
-            const activeOrders = Object.keys(data)
+            // 📅 獲取選定的統計日期
+            const selectedDateVal = document.getElementById('statsDatePicker').value || getTodayYMD();
+            const [sYear, sMonth, sDay] = selectedDateVal.split('-').map(Number);
+            const startOfSelectedDay = new Date(sYear, sMonth - 1, sDay, 0, 0, 0, 0).getTime();
+            const endOfSelectedDay = new Date(sYear, sMonth - 1, sDay, 23, 59, 59, 999).getTime();
+
+            const isSelectedToday = (selectedDateVal === getTodayYMD());
+            document.getElementById('statDateLabel').innerText = isSelectedToday ? '📅 預設：今日' : `📅 查詢日期：${selectedDateVal}`;
+
+            // 🍳 廚房與出餐：只顯示「今日」的即時單據
+            const todayActiveOrders = Object.keys(data)
                 .map(k => {
                     const item = data[k];
                     const kStatus = item.kitchenStatus || item.status || 'pending';
@@ -715,25 +763,29 @@
                     return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus, servingStatus: sStatus };
                 })
                 .filter(o => {
-                    // 🔒 嚴格過濾：未刪除 且 必須是「今天 00:00:00」之後產生的訂單
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
                     return !o.isDeleted && isToday;
                 });
 
-            const sortedKitchen = [...activeOrders].sort((a, b) => {
+            // 📊 統計：過濾出「選定日期」的訂單
+            const selectedDayOrders = Object.keys(data)
+                .map(k => ({ id: k, ...data[k] }))
+                .filter(o => {
+                    const inRange = o.timestamp && o.timestamp >= startOfSelectedDay && o.timestamp <= endOfSelectedDay;
+                    return !o.isDeleted && inRange;
+                });
+
+            const sortedKitchen = [...todayActiveOrders].sort((a, b) => {
                 if (a.kitchenStatus === b.kitchenStatus) return a.timestamp - b.timestamp;
                 return a.kitchenStatus === 'done' ? 1 : -1;
             });
 
-            const sortedServing = [...activeOrders].sort((a, b) => {
+            const sortedServing = [...todayActiveOrders].sort((a, b) => {
                 if (a.servingStatus === b.servingStatus) return a.timestamp - b.timestamp;
                 return a.servingStatus === 'done' ? 1 : -1;
             });
 
-            let kitchenHtml = '', servingHtml = '', totalRev = 0;
-
-            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
-            const itemStats = {};
+            let kitchenHtml = '', servingHtml = '';
 
             // 🍳 渲染廚房視圖
             sortedKitchen.forEach(o => {
@@ -774,10 +826,8 @@
                     </div>`;
             });
 
-            // 🔔 渲染出餐視圖與統計資料
+            // 🔔 渲染出餐視圖
             sortedServing.forEach(o => {
-                totalRev += parseFloat(o.total) || 0;
-                
                 let itemsStr = o.items.map(i => {
                     const sub = (i.price || 0) * (i.qty || 0);
                     const cat = i.category || (ITEM_LOOKUP[i.name] ? ITEM_LOOKUP[i.name].category : '其他');
@@ -791,24 +841,6 @@
                 const isSDone = (o.servingStatus === 'done');
                 const isKReady = (o.kitchenStatus === 'done' && !isSDone);
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
-
-                // 進行今日餐點數量與金額統計
-                if (o.items && Array.isArray(o.items)) {
-                    o.items.forEach(it => {
-                        const q = parseInt(it.qty || 0, 10);
-                        const p = parseFloat(it.price || 0);
-                        const subTotal = q * p;
-
-                        if (!itemStats[it.name]) itemStats[it.name] = { qty: 0, rev: 0 };
-                        itemStats[it.name].qty += q;
-                        itemStats[it.name].rev += subTotal;
-
-                        const cat = it.category || (ITEM_LOOKUP[it.name] ? ITEM_LOOKUP[it.name].category : '其他');
-                        if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
-                        categoryStats[cat].qty += q;
-                        categoryStats[cat].rev += subTotal;
-                    });
-                }
 
                 servingHtml += `
                     <div class="order-card serving-card ${isSDone ? 'completed' : (isKReady ? 'kitchen-ready' : '')}">
@@ -837,11 +869,35 @@
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             document.getElementById('servingOrders').innerHTML = servingHtml || '<h3 style="color:#888;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             
-            // 📊 渲染【當日】總覽數據
-            document.getElementById('statRevenue').innerText = `$${totalRev}`;
-            document.getElementById('statCount').innerText = activeOrders.length;
+            // 📊 計算與渲染【選定日期】的統計數據
+            let totalRev = 0;
+            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
+            const itemStats = {};
 
-            // 📊 渲染【當日】分類統計表格
+            selectedDayOrders.forEach(o => {
+                totalRev += parseFloat(o.total) || 0;
+                if (o.items && Array.isArray(o.items)) {
+                    o.items.forEach(it => {
+                        const q = parseInt(it.qty || 0, 10);
+                        const p = parseFloat(it.price || 0);
+                        const subTotal = q * p;
+
+                        if (!itemStats[it.name]) itemStats[it.name] = { qty: 0, rev: 0 };
+                        itemStats[it.name].qty += q;
+                        itemStats[it.name].rev += subTotal;
+
+                        const cat = it.category || (ITEM_LOOKUP[it.name] ? ITEM_LOOKUP[it.name].category : '其他');
+                        if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
+                        categoryStats[cat].qty += q;
+                        categoryStats[cat].rev += subTotal;
+                    });
+                }
+            });
+
+            document.getElementById('statRevenue').innerText = `$${totalRev}`;
+            document.getElementById('statCount').innerText = selectedDayOrders.length;
+
+            // 📊 渲染【選定日期】分類統計表格
             let catHtml = '';
             Object.keys(categoryStats).forEach(cName => {
                 const cData = categoryStats[cName];
@@ -853,12 +909,12 @@
             });
             document.getElementById('statCategoryList').innerHTML = catHtml;
 
-            // 📊 渲染【當日】單品統計表格 (按銷售數量從高到低排序)
+            // 📊 渲染【選定日期】單品統計表格
             let itemHtml = '';
             const sortedItemKeys = Object.keys(itemStats).sort((a, b) => itemStats[b].qty - itemStats[a].qty);
             
             if (sortedItemKeys.length === 0) {
-                itemHtml = '<tr><td colspan="3" style="text-align:center; color:#888;">今日暫無銷售數據</td></tr>';
+                itemHtml = '<tr><td colspan="3" style="text-align:center; color:#888;">該日暫無銷售數據</td></tr>';
             } else {
                 sortedItemKeys.forEach(iName => {
                     const iData = itemStats[iName];
