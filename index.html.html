@@ -40,33 +40,34 @@
         .auth-btn:active { background: #e65100; }
         .error-msg { color: #d32f2f; font-size: 1.1rem; margin-top: 10px; display: none; font-weight: bold; }
 
-        /* 頂部導航列 */
+        /* 頂部導航列 (已移除文字標題並壓縮高度節省空間) */
         .navbar { 
             position: sticky; top: 0; z-index: 1000;
-            background: #111; color: white; display: flex; justify-content: space-between; align-items: center; 
-            padding: 5px 8px; min-height: 60px; box-shadow: 0 4px 10px rgba(0,0,0,0.3); width: 100%;
+            background: #111; color: white; display: flex; justify-content: space-around; align-items: center; 
+            padding: 4px 6px; min-height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); width: 100%;
         }
         .nav-btn { 
-            background: #333; color: #bbb; border: 1px solid #555; padding: 10px 12px; 
-            font-size: 1rem; font-weight: bold; border-radius: 8px; cursor: pointer; margin-left: 2px;
-            transition: all 0.2s ease;
+            flex: 1;
+            background: #333; color: #bbb; border: 1px solid #555; padding: 8px 0; 
+            font-size: 1rem; font-weight: bold; border-radius: 6px; cursor: pointer; margin: 0 2px;
+            transition: all 0.2s ease; text-align: center;
         }
         .nav-btn.active { 
             background: #ff9800; color: #000; font-size: 1.05rem; border-color: #fff;
-            box-shadow: 0 0 10px rgba(255,152,0,0.8); transform: scale(1.03);
+            box-shadow: 0 0 8px rgba(255,152,0,0.8);
         }
-        .nav-btn.lock-btn { background: #d32f2f; color: white; border: none; margin-left: 5px; }
+        .nav-btn.lock-btn { max-width: 45px; background: #d32f2f; color: white; border: none; }
 
         /* 切換頁面提示 (Toast) */
         #modeToast {
-            position: fixed; top: 70px; left: 50%; transform: translateX(-50%);
-            background: rgba(0,0,0,0.85); color: #fff; padding: 12px 24px; font-size: 1.2rem; font-weight: bold;
+            position: fixed; top: 55px; left: 50%; transform: translateX(-50%);
+            background: rgba(0,0,0,0.85); color: #fff; padding: 10px 20px; font-size: 1.1rem; font-weight: bold;
             border-radius: 30px; border: 2px solid #ff9800; z-index: 2000; display: none; text-align: center;
             box-shadow: 0 5px 15px rgba(0,0,0,0.4); width: 85%; max-width: 320px;
         }
 
         /* 各頁面專屬底色 */
-        .page { display: none; padding-bottom: 50px; min-height: calc(100vh - 60px); width: 100%; overflow-x: hidden; }
+        .page { display: none; padding-bottom: 50px; min-height: calc(100vh - 48px); width: 100%; overflow-x: hidden; }
         
         #pos.page { background-color: #fff8e7; } /* 前台：奶油米色 */
         #kitchen.page { background-color: #1a1a1a; } /* 廚房：深灰黑底色 */
@@ -76,8 +77,8 @@
         .page.active { display: block; }
 
         /* === 1. 前台落單 === */
-        .menu-container { padding: 12px; width: 100%; }
-        .category-title { font-size: 1.4rem; font-weight: 900; margin: 18px 0 10px; padding-left: 10px; border-left: 6px solid #333; }
+        .menu-container { padding: 10px; width: 100%; }
+        .category-title { font-size: 1.3rem; font-weight: 900; margin: 12px 0 8px; padding-left: 8px; border-left: 5px solid #333; }
         .cat-don { border-left-color: #e65100; color: #d84315; }
         .cat-noodle { border-left-color: #0d47a1; color: #1565c0; }
         .cat-snack { border-left-color: #f57f17; color: #f57f17; }
@@ -87,9 +88,9 @@
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
         
         .item-card { 
-            padding: 16px 2px; border-radius: 12px; text-align: center; 
-            font-size: 1.15rem; font-weight: 800; cursor: pointer; border: 2px solid #ccc;
-            box-shadow: 0 3px 6px rgba(0,0,0,0.08); transition: transform 0.1s;
+            padding: 14px 2px; border-radius: 10px; text-align: center; 
+            font-size: 1.1rem; font-weight: 800; cursor: pointer; border: 2px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: transform 0.1s;
             word-break: break-word;
         }
         .item-card:active { transform: scale(0.95); opacity: 0.8; }
@@ -103,32 +104,32 @@
 
         /* 購物車區塊 */
         .cart-container { 
-            background: #ffffff; margin: 20px 10px 40px 10px; padding: 16px; 
-            border: 3px solid #ff9800; border-radius: 14px; box-shadow: 0 5px 15px rgba(0,0,0,0.1); 
+            background: #ffffff; margin: 15px 10px 30px 10px; padding: 14px; 
+            border: 3px solid #ff9800; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
             max-width: calc(100vw - 20px);
         }
-        .cart-title { font-weight: bold; font-size: 1.35rem; margin-bottom: 12px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 8px; }
+        .cart-title { font-weight: bold; font-size: 1.25rem; margin-bottom: 10px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 6px; }
         
-        .input-row { display: flex; flex-direction: column; gap: 10px; margin-bottom: 12px; width: 100%; }
-        .form-input { width: 100%; padding: 14px; font-size: 1.2rem; border: 2px solid #ccc; border-radius: 8px; outline: none; }
+        .input-row { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; width: 100%; }
+        .form-input { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ccc; border-radius: 8px; outline: none; }
         .form-input:focus { border-color: #ff9800; }
         
-        .cart-items { margin-bottom: 12px; border-bottom: 2px dashed #ddd; padding-bottom: 10px; }
-        .cart-item { display: flex; justify-content: space-between; font-size: 1.25rem; margin-bottom: 10px; font-weight: 600; }
+        .cart-items { margin-bottom: 10px; border-bottom: 2px dashed #ddd; padding-bottom: 8px; }
+        .cart-item { display: flex; justify-content: space-between; font-size: 1.2rem; margin-bottom: 8px; font-weight: 600; }
         
         .submit-btn { 
-            width: 100%; background: #2e7d32; color: white; border: none; padding: 18px; 
-            font-size: 1.5rem; font-weight: 900; border-radius: 10px; cursor: pointer;
-            box-shadow: 0 4px 10px rgba(46,125,50,0.4); margin-top: 10px;
+            width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
+            font-size: 1.4rem; font-weight: 900; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(46,125,50,0.4); margin-top: 8px;
         }
         .submit-btn:active { background: #1b5e20; }
 
         /* === 2. 廚房 & 出餐 卡片共用樣式 === */
         .kds-container { 
-            padding: 12px; 
+            padding: 10px; 
             display: grid; 
             grid-template-columns: repeat(3, 1fr);
-            gap: 12px; 
+            gap: 10px; 
             width: 100%; 
         }
 
@@ -140,19 +141,19 @@
         
         .order-card { 
             background: white; width: 100%; border-radius: 12px; 
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 10px solid #ff9800; padding: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 8px solid #ff9800; padding: 10px; 
             display: flex; flex-direction: column;
         }
         .order-card.ready { border-top-color: #2e7d32; }
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.8; }
 
-        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-        .card-actions { display: flex; gap: 6px; margin: 8px 0; justify-content: flex-end; }
-        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 6px 10px; font-size: 0.95rem; font-weight: bold; cursor: pointer; color: #222; }
+        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 4px; }
+        .card-actions { display: flex; gap: 6px; margin: 6px 0; justify-content: flex-end; }
+        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 5px 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #222; }
         .action-btn.del { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
 
-        .card-items { margin: 10px 0; }
-        .card-item { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; padding: 4px 8px; border-radius: 6px; }
+        .card-items { margin: 8px 0; }
+        .card-item { display: flex; justify-content: space-between; font-size: 1.15rem; font-weight: bold; margin-bottom: 5px; padding: 4px 6px; border-radius: 6px; }
         
         .card-item.cat-item-drink { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .card-item.cat-item-don { background-color: #fff3e0; color: #bf360c; }
@@ -161,27 +162,27 @@
         .card-item.cat-item-other { background-color: #f5f5f5; color: #424242; }
 
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
-        .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 6px; font-weight: 900; font-size: 1.25rem; color: #c62828; margin-bottom: 8px; }
-        .card-note { background: #fffde7; padding: 6px 10px; border-radius: 6px; color: #c62828; font-size: 1.05rem; font-weight: bold; margin-bottom: 10px; border: 1px solid #fff59d; word-break: break-all; }
+        .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 4px; font-weight: 900; font-size: 1.2rem; color: #c62828; margin-bottom: 6px; }
+        .card-note { background: #fffde7; padding: 6px 8px; border-radius: 6px; color: #c62828; font-size: 1rem; font-weight: bold; margin-bottom: 8px; border: 1px solid #fff59d; word-break: break-all; }
         
-        .status-btn { width: 100%; padding: 14px 8px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.2rem; color: white; cursor: pointer; margin-top: auto; }
-        .btn-cooking { background: #ff9800; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
-        .btn-ready { background: #2e7d32; box-shadow: 0 4px 8px rgba(46,125,50,0.3); }
-        .btn-done { background: #616161; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
+        .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
+        .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
+        .btn-ready { background: #2e7d32; box-shadow: 0 3px 6px rgba(46,125,50,0.3); }
+        .btn-done { background: #616161; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
 
         /* === 3. 統計區塊樣式 === */
-        .stats-box { padding: 20px; background: white; margin: 15px 10px; border-radius: 12px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
-        .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
-        .stats-subtitle { font-size: 0.9rem; color: #2e7d32; background: #e8f5e9; padding: 4px 8px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
-        .stats-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-        .stats-table th, .stats-table td { padding: 10px; text-align: left; border-bottom: 1px solid #eee; font-size: 1.15rem; }
+        .stats-box { padding: 15px; background: white; margin: 12px 10px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
+        .stats-title { margin-top:0; font-size:1.3rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 6px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
+        .stats-subtitle { font-size: 0.85rem; color: #2e7d32; background: #e8f5e9; padding: 3px 6px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
+        .stats-table { width: 100%; border-collapse: collapse; margin-top: 8px; }
+        .stats-table th, .stats-table td { padding: 8px; text-align: left; border-bottom: 1px solid #eee; font-size: 1.1rem; }
         .stats-table th { background-color: #f5f5f5; font-weight: bold; }
         
         .date-picker-box {
-            display: flex; align-items: center; gap: 10px; background: #f5f5f5; padding: 10px; border-radius: 8px; margin-top: 10px;
+            display: flex; align-items: center; gap: 8px; background: #f5f5f5; padding: 8px; border-radius: 8px; margin-top: 8px;
         }
         .date-input {
-            padding: 8px 12px; font-size: 1.1rem; border: 2px solid #ff9800; border-radius: 6px; font-weight: bold; outline: none; background: #fff;
+            padding: 6px 10px; font-size: 1rem; border: 2px solid #ff9800; border-radius: 6px; font-weight: bold; outline: none; background: #fff;
         }
 
         /* 修改訂單 Modal 彈窗 */
@@ -192,12 +193,12 @@
         }
         .modal-content {
             background: white; border-radius: 12px; width: 100%; max-width: 480px;
-            max-height: 90vh; overflow-y: auto; padding: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            max-height: 90vh; overflow-y: auto; padding: 18px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
         }
-        .edit-item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; padding-bottom: 8px; border-bottom: 1px solid #eee; font-size: 1.15rem; }
-        .qty-btn { background: #ddd; border: none; font-size: 1.3rem; font-weight: bold; width: 36px; height: 36px; border-radius: 6px; cursor: pointer; margin: 0 5px; }
-        .add-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 10px; }
-        .add-menu-btn { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; font-size: 1rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .edit-item-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-bottom: 6px; border-bottom: 1px solid #eee; font-size: 1.1rem; }
+        .qty-btn { background: #ddd; border: none; font-size: 1.2rem; font-weight: bold; width: 34px; height: 34px; border-radius: 6px; cursor: pointer; margin: 0 4px; }
+        .add-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px; }
+        .add-menu-btn { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; font-size: 0.95rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
     </style>
 </head>
 <body>
@@ -213,16 +214,13 @@
         </div>
     </div>
 
-    <!-- 頂部導航列 -->
+    <!-- 頂部導航列 (已移除文字標題) -->
     <div class="navbar">
-        <div style="font-weight:bold; font-size:1.1rem; color:#ff9800;">Inoya POS</div>
-        <div>
-            <button class="nav-btn active" id="btn-pos" onclick="switchRole('pos')">前台</button>
-            <button class="nav-btn" id="btn-kitchen" onclick="switchRole('kitchen')">廚房</button>
-            <button class="nav-btn" id="btn-pass" onclick="switchRole('pass')">出餐</button>
-            <button class="nav-btn" id="btn-stats" onclick="switchRole('stats')">統計</button>
-            <button class="nav-btn lock-btn" onclick="lockSystem()" title="重新鎖定">🔒</button>
-        </div>
+        <button class="nav-btn active" id="btn-pos" onclick="switchRole('pos')">前台</button>
+        <button class="nav-btn" id="btn-kitchen" onclick="switchRole('kitchen')">廚房</button>
+        <button class="nav-btn" id="btn-pass" onclick="switchRole('pass')">出餐</button>
+        <button class="nav-btn" id="btn-stats" onclick="switchRole('stats')">統計</button>
+        <button class="nav-btn lock-btn" onclick="lockSystem()" title="重新鎖定">🔒</button>
     </div>
 
     <!-- 切換模式 Toast 提示 -->
@@ -289,13 +287,13 @@
 
     <!-- 2. 廚房製作頁面 -->
     <div id="kitchen" class="page">
-        <div style="padding:10px; color:#fff; font-size:1.2rem; font-weight:bold; text-align:center;">👨‍🍳 廚房做餐顯示屏 (Kitchen View)</div>
+        <div style="padding:8px; color:#fff; font-size:1.1rem; font-weight:bold; text-align:center;">👨‍🍳 廚房做餐顯示屏 (Kitchen View)</div>
         <div class="kds-container" id="kitchenOrders"></div>
     </div>
 
     <!-- 3. 出餐/叫號頁面 -->
     <div id="pass" class="page">
-        <div style="padding:10px; color:#fff; font-size:1.2rem; font-weight:bold; text-align:center;">🔔 出餐叫號控制台 (Pass View)</div>
+        <div style="padding:8px; color:#fff; font-size:1.1rem; font-weight:bold; text-align:center;">🔔 出餐叫號控制台 (Pass View)</div>
         <div class="kds-container" id="passOrders"></div>
     </div>
 
@@ -308,13 +306,13 @@
             </h3>
             
             <div class="date-picker-box">
-                <label style="font-weight:bold; font-size:1.1rem;">🗓️ 選擇查詢日期：</label>
+                <label style="font-weight:bold; font-size:1rem;">🗓️ 選擇日期：</label>
                 <input type="date" id="statsDatePicker" class="date-input" onchange="onDateChange()">
-                <button onclick="resetToToday()" style="padding:8px 12px; background:#ff9800; border:none; color:white; font-weight:bold; border-radius:6px; cursor:pointer;">重置為今日</button>
+                <button onclick="resetToToday()" style="padding:6px 10px; background:#ff9800; border:none; color:white; font-weight:bold; border-radius:6px; cursor:pointer;">今日</button>
             </div>
 
-            <p style="margin-top:15px;">Selected Date 總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:2rem;">$0</strong></p>
-            <p>Selected Date 有效單數：<strong id="statCount" style="font-size:1.6rem;">0</strong> 單</p>
+            <p style="margin-top:12px;">Selected Date 總營業額：<strong id="statRevenue" style="color:#2e7d32; font-size:1.8rem;">$0</strong></p>
+            <p>Selected Date 有效單數：<strong id="statCount" style="font-size:1.5rem;">0</strong> 單</p>
         </div>
 
         <div class="stats-box">
@@ -353,27 +351,27 @@
     <!-- 修改訂單 Modal 彈窗 -->
     <div id="editModal">
         <div class="modal-content">
-            <h3 style="margin-top:0; font-size:1.4rem; border-bottom:2px solid #ff9800; padding-bottom:8px;" id="editModalTitle">✏️ 修改訂單</h3>
+            <h3 style="margin-top:0; font-size:1.3rem; border-bottom:2px solid #ff9800; padding-bottom:6px;" id="editModalTitle">✏️ 修改訂單</h3>
             <input type="hidden" id="editOrderId">
             
-            <div style="margin-bottom:12px;">
-                <label style="font-weight:bold; font-size:1.1rem;">備註：</label>
-                <input type="text" id="editNote" class="form-input" style="padding:8px; font-size:1.1rem;">
+            <div style="margin-bottom:10px;">
+                <label style="font-weight:bold; font-size:1rem;">備註：</label>
+                <input type="text" id="editNote" class="form-input" style="padding:8px; font-size:1rem;">
             </div>
 
-            <div style="font-weight:bold; margin-top:15px; font-size:1.1rem;">已選餐點內容：</div>
-            <div id="editItemList" style="margin-top:8px;"></div>
+            <div style="font-weight:bold; margin-top:12px; font-size:1rem;">已選餐點內容：</div>
+            <div id="editItemList" style="margin-top:6px;"></div>
 
-            <div style="font-weight:bold; margin-top:15px; font-size:1.1rem;">加點其他餐點：</div>
+            <div style="font-weight:bold; margin-top:12px; font-size:1rem;">加點其他餐點：</div>
             <div class="add-menu-grid" id="addMenuGrid"></div>
 
-            <div style="margin-top:20px; font-size:1.3rem; font-weight:bold; text-align:right; color:#d32f2f;">
+            <div style="margin-top:15px; font-size:1.2rem; font-weight:bold; text-align:right; color:#d32f2f;">
                 新總金額：$<span id="editTotalPrice">0</span>
             </div>
 
-            <div style="display:flex; gap:10px; margin-top:20px;">
-                <button onclick="closeEditModal()" style="flex:1; padding:12px; background:#888; color:white; border:none; border-radius:6px; font-size:1.1rem; font-weight:bold; cursor:pointer;">取消</button>
-                <button onclick="saveEditOrder()" style="flex:1; padding:12px; background:#2e7d32; color:white; border:none; border-radius:6px; font-size:1.1rem; font-weight:bold; cursor:pointer;">儲存修改</button>
+            <div style="display:flex; gap:8px; margin-top:15px;">
+                <button onclick="closeEditModal()" style="flex:1; padding:10px; background:#888; color:white; border:none; border-radius:6px; font-size:1rem; font-weight:bold; cursor:pointer;">取消</button>
+                <button onclick="saveEditOrder()" style="flex:1; padding:10px; background:#2e7d32; color:white; border:none; border-radius:6px; font-size:1rem; font-weight:bold; cursor:pointer;">儲存修改</button>
             </div>
         </div>
     </div>
@@ -381,7 +379,7 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         
-        // 📌 菜單標準順序與分類表 (已刪除 髀丼)
+        // 📌 菜單標準順序與分類表
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
@@ -553,7 +551,6 @@
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
 
-            // 狀態說明：status 共有三階段 -> 'pending' (待製作) -> 'ready' (廚房完成，待出餐) -> 'done' (已領取/出餐完成)
             const orderData = {
                 seqNo: seq,
                 items: cart,
@@ -580,7 +577,6 @@
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        // 更改訂單狀態 (pending -> ready -> done)
         function updateOrderStatus(id, newStatus) {
             if (db) {
                 db.ref('orders/' + id + '/status').set(newStatus);
@@ -632,7 +628,7 @@
                         <span>${item.name} ($${item.price})</span>
                         <div>
                             <button class="qty-btn" onclick="changeEditQty(${idx}, -1)">-</button>
-                            <span style="font-weight:bold; font-size:1.2rem; display:inline-block; width:30px; text-align:center;">${item.qty}</span>
+                            <span style="font-weight:bold; font-size:1.1rem; display:inline-block; width:30px; text-align:center;">${item.qty}</span>
                             <button class="qty-btn" onclick="changeEditQty(${idx}, 1)">+</button>
                         </div>
                     </div>`;
@@ -737,7 +733,7 @@
                     return !o.isDeleted && inRange;
                 });
 
-            // 1. 渲染【廚房頁面】 (僅顯示 pending 待製作 與 ready 已做好的單)
+            // 1. 渲染【廚房頁面】
             let kitchenHtml = '';
             const kitchenList = todayActiveOrders.filter(o => o.status === 'pending' || o.status === 'ready');
             kitchenList.sort((a, b) => a.timestamp - b.timestamp);
@@ -775,8 +771,7 @@
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無待製作訂單</h3>';
 
-
-            // 2. 渲染【出餐頁面】 (顯示所有單，主要突出 ready 待叫號與 done 已領取)
+            // 2. 渲染【出餐頁面】
             let passHtml = '';
             const passList = [...todayActiveOrders].sort((a, b) => {
                 if (a.status !== b.status) {
