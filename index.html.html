@@ -71,7 +71,6 @@
         
         #pos.page { background-color: #fff8e7; } /* 前台：奶油米色 */
         #kitchen.page { background-color: #0d1b2a; } /* 廚房：高對比深藍色 */
-        #serving.page { background-color: #eef7ee; } /* 出餐：清新淺綠色 */
         #stats.page { background-color: #f3e5f5; } /* 統計：淡紫色 */
 
         .page.active { display: block; }
@@ -124,7 +123,7 @@
         }
         .submit-btn:active { background: #1b5e20; }
 
-        /* === 2 & 3. 廚房 / 出餐 卡片樣式 (一排 3 單網格) === */
+        /* === 2. 廚房 卡片樣式 (一排 3 單網格) === */
         .kds-container { 
             padding: 12px; 
             display: grid; 
@@ -147,9 +146,7 @@
         }
         #kitchen .order-card { background: #ffffff; color: #000; }
         
-        .order-card.serving-card { border-top-color: #2196F3; }
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.8; }
-        .order-card.kitchen-ready { border-top-color: #2e7d32; background: #e8f5e9; }
 
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.25rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
         .card-actions { display: flex; gap: 6px; margin: 8px 0; justify-content: flex-end; }
@@ -159,7 +156,7 @@
         .card-items { margin: 10px 0; }
         .card-item { display: flex; justify-content: space-between; font-size: 1.2rem; font-weight: bold; margin-bottom: 6px; padding: 4px 8px; border-radius: 6px; }
         
-        /* 🍱 廚房及出餐單項分類色彩 (重點：飲品綠色標示) */
+        /* 🍱 廚房單項分類色彩 */
         .card-item.cat-item-drink { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .card-item.cat-item-don { background-color: #fff3e0; color: #bf360c; }
         .card-item.cat-item-noodle { background-color: #e3f2fd; color: #0d47a1; }
@@ -172,10 +169,9 @@
         
         .status-btn { width: 100%; padding: 14px 8px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.2rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cook { background: #ff9800; box-shadow: 0 4px 8px rgba(255,152,0,0.3); }
-        .btn-serve { background: #2196F3; box-shadow: 0 4px 8px rgba(33,150,243,0.3); }
         .btn-done { background: #616161; box-shadow: 0 2px 6px rgba(0,0,0,0.2); }
 
-        /* === 4. 統計區塊樣式 === */
+        /* === 3. 統計區塊樣式 === */
         .stats-box { padding: 20px; background: white; margin: 15px 10px; border-radius: 12px; font-size: 1.2rem; box-shadow: 0 4px 10px rgba(0,0,0,0.05); }
         .stats-title { margin-top:0; font-size:1.4rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 8px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; }
         .stats-subtitle { font-size: 0.9rem; color: #2e7d32; background: #e8f5e9; padding: 4px 8px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
@@ -224,7 +220,6 @@
         <div>
             <button class="nav-btn active" id="btn-pos" onclick="switchRole('pos')">前台</button>
             <button class="nav-btn" id="btn-kitchen" onclick="switchRole('kitchen')">廚房</button>
-            <button class="nav-btn" id="btn-serving" onclick="switchRole('serving')">出餐</button>
             <button class="nav-btn" id="btn-stats" onclick="switchRole('stats')">統計</button>
             <button class="nav-btn lock-btn" onclick="lockSystem()" title="重新鎖定">🔒</button>
         </div>
@@ -242,6 +237,7 @@
                 <div class="item-card item-don" onclick="addToCart('豚丼', 40, '丼飯')">豚丼 $40</div>
                 <div class="item-card item-don" onclick="addToCart('泡豚', 40, '丼飯')">泡豚 $40</div>
                 <div class="item-card item-don" onclick="addToCart('髀丼', 36, '丼飯')">髀丼 $36</div>
+                <div class="item-card item-don" onclick="addToCart('特餐', 32, '丼飯')">特餐 $32</div>
             </div>
 
             <div class="category-title cat-noodle">冷麵</div>
@@ -297,12 +293,7 @@
         <div class="kds-container" id="kitchenOrders"></div>
     </div>
 
-    <!-- 3. 出餐手機頁面 -->
-    <div id="serving" class="page">
-        <div class="kds-container" id="servingOrders"></div>
-    </div>
-
-    <!-- 4. 統計頁面 -->
+    <!-- 3. 統計頁面 -->
     <div id="stats" class="page">
         <!-- 營業總覽與日期選擇器 -->
         <div class="stats-box">
@@ -387,12 +378,13 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         
-        // 📌 菜單標準順序與分類表 (已加入 髀丼 $36)
+        // 📌 菜單標準順序與分類表 (已加入 特餐 $32)
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
             { name: '泡豚', price: 40, category: '丼飯' },
             { name: '髀丼', price: 36, category: '丼飯' },
+            { name: '特餐', price: 32, category: '丼飯' },
             { name: 'A(螺)', price: 28, category: '冷麵' }, 
             { name: 'B(腸)', price: 28, category: '冷麵' }, 
             { name: 'C(翼)', price: 35, category: '冷麵' }, 
@@ -508,7 +500,7 @@
             document.getElementById(role).classList.add('active');
             document.getElementById('btn-' + role).classList.add('active');
             
-            const titles = { pos: '前台模式', kitchen: '廚房模式', serving: '出餐模式', stats: '統計模式' };
+            const titles = { pos: '前台模式', kitchen: '廚房模式', stats: '統計模式' };
             const toast = document.getElementById('modeToast');
             toast.innerText = `已切換至【${titles[role]}】`;
             toast.style.display = 'block';
@@ -572,7 +564,6 @@
                 note: note,
                 time: timeStr,
                 kitchenStatus: 'pending',
-                servingStatus: 'pending',
                 isDeleted: false,
                 timestamp: Date.now()
             };
@@ -604,22 +595,6 @@
                 db.ref('orders/' + id + '/kitchenStatus').set(nextStatus);
             } else {
                 if (localOrders[id]) localOrders[id].kitchenStatus = nextStatus;
-                renderAllViews(localOrders);
-            }
-        }
-
-        // 🔔 出餐完成 / 復原狀態
-        function toggleServingStatus(id, currentStatus, seqNo) {
-            let nextStatus = 'done';
-            if (currentStatus === 'done') {
-                if (!confirm(`⚠️ 確定要將單號 #${seqNo} 改回【未完成】狀態嗎？`)) return;
-                nextStatus = 'pending';
-            }
-
-            if (db) {
-                db.ref('orders/' + id + '/servingStatus').set(nextStatus);
-            } else {
-                if (localOrders[id]) localOrders[id].servingStatus = nextStatus;
                 renderAllViews(localOrders);
             }
         }
@@ -750,17 +725,16 @@
             const isSelectedToday = (selectedDateVal === getTodayYMD());
             document.getElementById('statDateLabel').innerText = isSelectedToday ? '📅 預設：今日' : `📅 查詢日期：${selectedDateVal}`;
 
-            // 🍳 廚房與出餐：只顯示「今日」的即時單據
+            // 🍳 廚房：只顯示「今日」的即時單據
             const todayActiveOrders = Object.keys(data)
                 .map(k => {
                     const item = data[k];
                     const kStatus = item.kitchenStatus || item.status || 'pending';
-                    const sStatus = item.servingStatus || item.status || 'pending';
                     
                     let sortedItems = item.items ? [...item.items] : [];
                     sortCartByMenuOrder(sortedItems);
 
-                    return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus, servingStatus: sStatus };
+                    return { id: k, ...item, items: sortedItems, kitchenStatus: kStatus };
                 })
                 .filter(o => {
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
@@ -775,17 +749,18 @@
                     return !o.isDeleted && inRange;
                 });
 
+            // 📌 排序邏輯：未完成按時間正序（舊單喺前），已完成按單號/時間降序（大單號喺前）
             const sortedKitchen = [...todayActiveOrders].sort((a, b) => {
-                if (a.kitchenStatus === b.kitchenStatus) return a.timestamp - b.timestamp;
-                return a.kitchenStatus === 'done' ? 1 : -1;
+                if (a.kitchenStatus !== b.kitchenStatus) {
+                    return a.kitchenStatus === 'done' ? 1 : -1; // 未完成排前面，已完成排後面
+                }
+                if (a.kitchenStatus === 'done') {
+                    return b.timestamp - a.timestamp; // 已完成的單：大單號 (時間新) 排前面
+                }
+                return a.timestamp - b.timestamp; // 未完成的單：小單號 (時間舊) 排前面
             });
 
-            const sortedServing = [...todayActiveOrders].sort((a, b) => {
-                if (a.servingStatus === b.servingStatus) return a.timestamp - b.timestamp;
-                return a.servingStatus === 'done' ? 1 : -1;
-            });
-
-            let kitchenHtml = '', servingHtml = '';
+            let kitchenHtml = '';
 
             // 🍳 渲染廚房視圖
             sortedKitchen.forEach(o => {
@@ -826,48 +801,7 @@
                     </div>`;
             });
 
-            // 🔔 渲染出餐視圖
-            sortedServing.forEach(o => {
-                let itemsStr = o.items.map(i => {
-                    const sub = (i.price || 0) * (i.qty || 0);
-                    const cat = i.category || (ITEM_LOOKUP[i.name] ? ITEM_LOOKUP[i.name].category : '其他');
-                    const catClass = CAT_CLASS_MAP[cat] || 'cat-item-other';
-                    return `<div class="card-item ${catClass}">
-                        <span>${i.name} <b>x${i.qty}</b></span>
-                        <span class="card-price-tag">$${sub}</span>
-                    </div>`;
-                }).join('');
-
-                const isSDone = (o.servingStatus === 'done');
-                const isKReady = (o.kitchenStatus === 'done' && !isSDone);
-                const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
-
-                servingHtml += `
-                    <div class="order-card serving-card ${isSDone ? 'completed' : (isKReady ? 'kitchen-ready' : '')}">
-                        <div class="card-header">
-                            <span>#${o.seqNo}</span>
-                            <span>${o.time} ${isKReady ? '🍳<b style="color:#2e7d32;font-size:1.05rem;">[廚房已好]</b>' : ''}</span>
-                        </div>
-                        <div class="card-actions">
-                            <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改</button>
-                            <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
-                        </div>
-                        <div class="card-items">${itemsStr}</div>
-                        <div class="card-total-row">
-                            <span>總計:</span>
-                            <span>$${o.total || 0}</span>
-                        </div>
-                        ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        ${
-                            isSDone 
-                            ? `<button class="status-btn btn-done" onclick="toggleServingStatus('${o.id}', 'done', '${o.seqNo}')">✅ 已完成出餐 (按此改回未完成)</button>`
-                            : `<button class="status-btn btn-serve" onclick="toggleServingStatus('${o.id}', 'pending', '${o.seqNo}')">🔔 完成出餐</button>`
-                        }
-                    </div>`;
-            });
-
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
-            document.getElementById('servingOrders').innerHTML = servingHtml || '<h3 style="color:#888;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">暫無訂單</h3>';
             
             // 📊 計算與渲染【選定日期】的統計數據
             let totalRev = 0;
