@@ -198,7 +198,6 @@
         .add-menu-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px; margin-top: 8px; }
         .add-menu-btn { background: #f0f0f0; border: 1px solid #ccc; padding: 8px; font-size: 0.95rem; border-radius: 6px; font-weight: bold; cursor: pointer; }
 
-        /* 💥 落單確認彈窗專用 - 搶眼價格樣式 */
         .confirm-total-box {
             background: #fff3e0;
             border: 2px dashed #ff9800;
@@ -373,19 +372,14 @@
                 單號：<span id="confirmSeq" style="color:#e65100; font-size:1.3rem;">000</span>
             </div>
 
-            <!-- 餐點內容 -->
             <div id="confirmItemList" style="border:1px solid #eee; background:#fafafa; border-radius:8px; padding:10px; max-height:200px; overflow-y:auto;"></div>
-
-            <!-- 備註 -->
             <div id="confirmNoteBox" style="margin-top:8px; color:#c62828; font-weight:bold; font-size:1rem; display:none;"></div>
 
-            <!-- 搶眼金額顯示區 -->
             <div class="confirm-total-box">
                 <div style="font-size:1rem; font-weight:bold; color:#666;">應收總金額</div>
                 <div class="confirm-total-price">$<span id="confirmTotalPrice">0</span></div>
             </div>
 
-            <!-- 確定 / 取消 按鈕區 -->
             <div style="display:flex; gap:10px; margin-top:20px;">
                 <button onclick="closeConfirmModal()" style="flex:1; padding:14px; background:#888; color:white; border:none; border-radius:8px; font-size:1.2rem; font-weight:bold; cursor:pointer;">
                     ❌ 取消
@@ -589,7 +583,6 @@
             document.getElementById('nextSeq').innerText = String(nextSeq).padStart(3, '0');
         }
 
-        /* 📋 前台落單：開啟確認彈窗 */
         function openConfirmModal() {
             if (cart.length === 0) return alert('請先點餐！');
 
@@ -623,7 +616,6 @@
             document.getElementById('confirmModal').style.display = 'none';
         }
 
-        /* 🚀 執行提交訂單 */
         function submitOrder() {
             closeConfirmModal();
             const note = document.getElementById('orderNote').value.trim();
@@ -796,7 +788,7 @@
             const todayActiveOrders = Object.keys(data)
                 .map(k => {
                     const item = data[k];
-                    const status = item.status || item.kitchenStatus || 'pending';
+                    const status = item.status || 'pending';
                     
                     let sortedItems = item.items ? [...item.items] : [];
                     sortCartByMenuOrder(sortedItems);
@@ -815,27 +807,27 @@
                     return !o.isDeleted && inRange;
                 });
 
-            // 🌟 通用排序函數：未完成優先 (小單號在前)，已完成排後 (大單號在前)
-            function customOrderSort(a, b) {
-                const isDoneA = (a.status === 'done');
-                const isDoneB = (b.status === 'done');
+            // 🍳 廚房專屬排序與邏輯：只區分「未完成」與「已完成」，完全不管/隱藏出餐狀態
+            function kitchenOrderSort(a, b) {
+                const isKitchenDoneA = (a.status !== 'pending'); // 只要不是 pending 就是廚房已完成
+                const isKitchenDoneB = (b.status !== 'pending');
 
-                if (!isDoneA && isDoneB) return -1; // a未完成，排前面
-                if (isDoneA && !isDoneB) return 1;  // b未完成，排前面
+                if (!isKitchenDoneA && isKitchenDoneB) return -1; // 未完成排前面
+                if (isKitchenDoneA && !isKitchenDoneB) return 1;  // 已完成沉底
 
                 const numA = parseInt(a.seqNo, 10) || 0;
                 const numB = parseInt(b.seqNo, 10) || 0;
 
-                if (!isDoneA && !isDoneB) {
-                    return numA - numB; // 未完成：小單號優先 (1, 2, 3...)
+                if (!isKitchenDoneA && !isKitchenDoneB) {
+                    return numA - numB; // 未完成：小單號優先 (001 ➔ 002)
                 } else {
-                    return numB - numA; // 已完成：大單號優先 (5, 4, 3...)
+                    return numB - numA; // 已完成：大單號優先 (005 ➔ 004)
                 }
             }
 
-            // 1. 渲染【廚房頁面】 (廚房保留全部訂單，未完成小單號在前，已完成大單號沉底)
+            // 1. 渲染【廚房頁面】
             let kitchenHtml = '';
-            const kitchenList = [...todayActiveOrders].sort(customOrderSort);
+            const kitchenList = [...todayActiveOrders].sort(kitchenOrderSort);
 
             kitchenList.forEach(o => {
                 let itemsStr = o.items.map(i => {
@@ -846,21 +838,18 @@
                     </div>`;
                 }).join('');
 
-                const isReady = (o.status === 'ready');
-                const isDone = (o.status === 'done');
+                const isKitchenDone = (o.status !== 'pending');
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
                 let btnHtml = '';
-                if (o.status === 'pending') {
+                if (!isKitchenDone) {
                     btnHtml = `<button class="status-btn btn-cooking" onclick="updateOrderStatus('${o.id}', 'ready')">👨‍🍳 煮好出單</button>`;
-                } else if (o.status === 'ready') {
-                    btnHtml = `<button class="status-btn btn-ready" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此退回)</button>`;
                 } else {
-                    btnHtml = `<button class="status-btn btn-done" disabled style="opacity:0.6;">🏁 客人已領取 (完成)</button>`;
+                    btnHtml = `<button class="status-btn btn-done" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
                 }
 
                 kitchenHtml += `
-                    <div class="order-card ${isReady ? 'ready' : (isDone ? 'completed' : '')}">
+                    <div class="order-card ${isKitchenDone ? 'completed' : ''}">
                         <div class="card-header">
                             <span>#${o.seqNo}</span>
                             <span>${o.time}</span>
@@ -876,9 +865,26 @@
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
-            // 2. 渲染【出餐頁面】 (依自訂規則：未完成排前小單號優先，已完成排後大單號優先)
+            // 2. 渲染【出餐頁面】 (保留原本叫號與出餐邏輯)
+            function passOrderSort(a, b) {
+                const isDoneA = (a.status === 'done');
+                const isDoneB = (b.status === 'done');
+
+                if (!isDoneA && isDoneB) return -1;
+                if (isDoneA && !isDoneB) return 1;
+
+                const numA = parseInt(a.seqNo, 10) || 0;
+                const numB = parseInt(b.seqNo, 10) || 0;
+
+                if (!isDoneA && !isDoneB) {
+                    return numA - numB;
+                } else {
+                    return numB - numA;
+                }
+            }
+
             let passHtml = '';
-            const passList = [...todayActiveOrders].sort(customOrderSort);
+            const passList = [...todayActiveOrders].sort(passOrderSort);
 
             passList.forEach(o => {
                 let itemsStr = o.items.map(i => {
