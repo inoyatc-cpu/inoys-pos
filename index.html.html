@@ -428,7 +428,7 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         
-        // 📌 菜單標準順序與分類表 (已更名：保馬 $2)
+        // 📌 菜單標準順序與分類表
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
@@ -833,10 +833,9 @@
                 }
             }
 
-            // 1. 渲染【廚房頁面】 (廚房只看 pending 與 ready，未完成小單號在前)
+            // 1. 渲染【廚房頁面】 (廚房保留全部訂單，未完成小單號在前，已完成大單號沉底)
             let kitchenHtml = '';
-            const kitchenList = todayActiveOrders.filter(o => o.status === 'pending' || o.status === 'ready');
-            kitchenList.sort(customOrderSort);
+            const kitchenList = [...todayActiveOrders].sort(customOrderSort);
 
             kitchenList.forEach(o => {
                 let itemsStr = o.items.map(i => {
@@ -848,10 +847,20 @@
                 }).join('');
 
                 const isReady = (o.status === 'ready');
+                const isDone = (o.status === 'done');
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
+                let btnHtml = '';
+                if (o.status === 'pending') {
+                    btnHtml = `<button class="status-btn btn-cooking" onclick="updateOrderStatus('${o.id}', 'ready')">👨‍🍳 煮好出單</button>`;
+                } else if (o.status === 'ready') {
+                    btnHtml = `<button class="status-btn btn-ready" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此退回)</button>`;
+                } else {
+                    btnHtml = `<button class="status-btn btn-done" disabled style="opacity:0.6;">🏁 客人已領取 (完成)</button>`;
+                }
+
                 kitchenHtml += `
-                    <div class="order-card ${isReady ? 'ready' : ''}">
+                    <div class="order-card ${isReady ? 'ready' : (isDone ? 'completed' : '')}">
                         <div class="card-header">
                             <span>#${o.seqNo}</span>
                             <span>${o.time}</span>
@@ -862,14 +871,10 @@
                         </div>
                         <div class="card-items">${itemsStr}</div>
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        ${
-                            isReady 
-                            ? `<button class="status-btn btn-ready" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此退回)</button>`
-                            : `<button class="status-btn btn-cooking" onclick="updateOrderStatus('${o.id}', 'ready')">👨‍🍳 煮好出單</button>`
-                        }
+                        ${btnHtml}
                     </div>`;
             });
-            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無待製作訂單</h3>';
+            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
             // 2. 渲染【出餐頁面】 (依自訂規則：未完成排前小單號優先，已完成排後大單號優先)
             let passHtml = '';
