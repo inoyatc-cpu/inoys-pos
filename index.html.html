@@ -66,7 +66,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.4); width: 85%; max-width: 320px;
         }
 
-        /* 🔔 廚房專屬無按鈕提示橫幅 */
+        /* 🔔 廚房新單提示橫幅 (無按鈕) */
         #kitchenAlertBanner {
             position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
             padding: 12px 24px; font-size: 1.2rem; font-weight: 900; color: white;
@@ -170,7 +170,6 @@
             display: flex; flex-direction: column; transition: all 0.2s;
         }
         
-        /* 灰底暗淡感效果：已出餐卡片變為灰色底色並降透明度 */
         .order-card.completed { 
             background: #e0e0e0 !important; 
             border-top-color: #757575 !important; 
@@ -187,6 +186,17 @@
         @keyframes urgentBlink {
             0% { box-shadow: 0 0 5px #d32f2f; }
             100% { box-shadow: 0 0 20px #d32f2f; }
+        }
+
+        .silence-btn {
+            background: #d32f2f; color: white; border: none; padding: 10px;
+            font-size: 1.05rem; font-weight: 900; border-radius: 8px; cursor: pointer;
+            margin-bottom: 8px; width: 100%; box-shadow: 0 2px 6px rgba(211,47,47,0.4);
+            animation: pulseBtn 0.8s infinite alternate;
+        }
+        @keyframes pulseBtn {
+            0% { transform: scale(1); }
+            100% { transform: scale(1.02); }
         }
 
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 4px; }
@@ -390,12 +400,12 @@
         </div>
     </div>
 
-    <!-- 2. 廚房製作頁面 (已移除標題列) -->
+    <!-- 2. 廚房製作頁面 -->
     <div id="kitchen" class="page">
         <div class="kds-container" id="kitchenOrders" style="padding-top:15px;"></div>
     </div>
 
-    <!-- 3. 出餐/叫號頁面 (已移除標題列) -->
+    <!-- 3. 出餐/叫號頁面 -->
     <div id="pass" class="page">
         <div class="kds-container" id="passOrders" style="padding-top:15px;"></div>
     </div>
@@ -584,7 +594,10 @@
 
         // 🔊 Web Audio API 音效產生器
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        
+        let alarmInterval = null; // 🔊 蜂鳴器計時器
+        let activeAlarmOrders = new Set(); // 正在鳴響提示音的訂單 ID 集合
+        let silencedPickupOrders = new Set(); // 已手動按鈕關閉提示音的訂單 ID 集合
+
         function playBeepSound(freq = 880, type = 'sine', duration = 0.2) {
             try {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
@@ -606,13 +619,39 @@
             setTimeout(() => playBeepSound(1174.66, 'sine', 0.25), 180);
         }
 
-        function playUrgentSound() {
-            playBeepSound(523.25, 'triangle', 0.2);
-            setTimeout(() => playBeepSound(659.25, 'triangle', 0.3), 220);
+        // 🔊 開始持續急促警報聲
+        function startLoopingAlarm() {
+            if (!alarmInterval) {
+                alarmInterval = setInterval(() => {
+                    if (currentRole === 'kitchen' && activeAlarmOrders.size > 0) {
+                        playBeepSound(659.25, 'triangle', 0.25);
+                        setTimeout(() => playBeepSound(880, 'triangle', 0.25), 200);
+                    } else {
+                        stopLoopingAlarm();
+                    }
+                }, 800);
+            }
         }
 
-        // 🔔 廚房專屬畫面提示（無按鈕）
-        function showKitchenBanner(msg, bgColor = '#ff9800', duration = 2000) {
+        function stopLoopingAlarm() {
+            if (alarmInterval) {
+                clearInterval(alarmInterval);
+                alarmInterval = null;
+            }
+        }
+
+        // 🔕 手動關閉特定訂單的倒數提示音
+        function silenceOrderAlarm(orderId) {
+            silencedPickupOrders.add(orderId);
+            activeAlarmOrders.delete(orderId);
+            if (activeAlarmOrders.size === 0) {
+                stopLoopingAlarm();
+            }
+            renderAllViews(currentRawData);
+        }
+
+        // 🔔 廚房專屬無按鈕提示橫幅 (新單用)
+        function showKitchenBanner(msg, bgColor = '#ff9800', duration = 1500) {
             const banner = document.getElementById('kitchenAlertBanner');
             banner.innerText = msg;
             banner.style.backgroundColor = bgColor;
@@ -796,7 +835,8 @@
             document.getElementById('statsDatePicker').value = getTodayYMD();
             initTimeWheels();
 
-            setInterval(checkKitchenPickupTimeReminders, 15000);
+            // 每 10 秒檢查一次是否有單據需要觸發/關閉倒數提醒
+            setInterval(checkKitchenPickupTimeReminders, 10000);
         });
 
         const firebaseConfig = {
@@ -823,7 +863,6 @@
         let editingCart = [];
         let currentMaxSeq = 0;
         let lastOrderCountKitchen = -1;
-        let alertedPickupOrders = new Set();
 
         function switchRole(role) {
             currentRole = role;
@@ -839,7 +878,10 @@
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 1500);
 
-            if (role === 'kitchen') {
+            // 如果離開廚房頁面，立即停用持續提示音
+            if (role !== 'kitchen') {
+                stopLoopingAlarm();
+            } else {
                 checkKitchenPickupTimeReminders();
             }
         }
@@ -970,6 +1012,11 @@
         }
 
         function updateOrderStatus(id, newStatus) {
+            // 如完成做餐，清理該單提示音狀態
+            if (newStatus !== 'pending') {
+                activeAlarmOrders.delete(id);
+                if (activeAlarmOrders.size === 0) stopLoopingAlarm();
+            }
             if (db) {
                 db.ref('orders/' + id + '/status').set(newStatus);
             } else {
@@ -990,6 +1037,9 @@
 
         function deleteOrder(id, seqNo) {
             if (confirm(`⚠️ 確定要刪除單號 #${seqNo} 嗎？此動作會在畫面上隱藏該單。`)) {
+                activeAlarmOrders.delete(id);
+                if (activeAlarmOrders.size === 0) stopLoopingAlarm();
+
                 if (db) {
                     db.ref('orders/' + id + '/isDeleted').set(true);
                 } else {
@@ -1107,6 +1157,7 @@
             renderAllViews(currentRawData);
         }
 
+        // ⏰ 檢查廚房單據取餐時間（前 10 分鐘響警報）
         function checkKitchenPickupTimeReminders() {
             if (currentRole !== 'kitchen' || !currentRawData) return;
 
@@ -1117,25 +1168,32 @@
                 const o = currentRawData[k];
                 if (!o || o.isDeleted || (o.timestamp && o.timestamp < startOfToday)) return;
                 
+                // 僅針對未完成 (pending) 且有指定取餐時間的單據
                 if ((!o.status || o.status === 'pending') && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
                     if (parts.length === 2) {
                         const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0], 10), parseInt(parts[1], 10));
                         const diffMinutes = (targetTime.getTime() - now.getTime()) / (1000 * 60);
 
-                        if (diffMinutes <= 10 && diffMinutes >= -15) {
-                            if (!alertedPickupOrders.has(k)) {
-                                alertedPickupOrders.add(k);
-                                playUrgentSound();
-                                showKitchenBanner(`⏰ 單號 #${o.seqNo} 即將到期！(取餐時間：${o.pickupTime})`, '#d32f2f', 3000);
-                                
-                                const cardEl = document.getElementById(`kitchen-card-${k}`);
-                                if (cardEl) cardEl.classList.add('urgent-warning');
+                        // 進入 10 分鐘倒數範圍
+                        if (diffMinutes <= 10 && diffMinutes >= -30) {
+                            if (!silencedPickupOrders.has(k)) {
+                                activeAlarmOrders.add(k);
                             }
+                        } else {
+                            activeAlarmOrders.delete(k);
                         }
                     }
+                } else {
+                    activeAlarmOrders.delete(k);
                 }
             });
+
+            if (activeAlarmOrders.size > 0 && currentRole === 'kitchen') {
+                startLoopingAlarm();
+            } else {
+                stopLoopingAlarm();
+            }
         }
 
         if (db) {
@@ -1182,6 +1240,7 @@
                     return !o.isDeleted && inRange;
                 });
 
+            // 🍳 廚房新單提示 (僅在廚房頁面觸發，彈出 1.5 秒自動消失畫面，不含按鈕)
             const pendingKitchenOrders = todayActiveOrders.filter(o => o.status === 'pending');
             if (currentRole === 'kitchen') {
                 if (lastOrderCountKitchen !== -1 && pendingKitchenOrders.length > lastOrderCountKitchen) {
@@ -1231,14 +1290,21 @@
                     btnHtml = `<button class="status-btn btn-done active-state" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
                 }
 
+                // 判斷是否屬於取餐前 10 分鐘緊急狀態
                 let isUrgent = false;
                 if (!isKitchenDone && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
                     if (parts.length === 2) {
                         const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0], 10), parseInt(parts[1], 10));
                         const diffMinutes = (targetTime.getTime() - now.getTime()) / (1000 * 60);
-                        if (diffMinutes <= 10 && diffMinutes >= -15) isUrgent = true;
+                        if (diffMinutes <= 10 && diffMinutes >= -30) isUrgent = true;
                     }
+                }
+
+                // 若處於緊急狀態且聲音尚未關閉，加入「關閉提醒」按鈕
+                let silenceBtnHtml = '';
+                if (isUrgent && activeAlarmOrders.has(o.id)) {
+                    silenceBtnHtml = `<button class="silence-btn" onclick="silenceOrderAlarm('${o.id}')">🔕 關閉提醒 (停止提示音)</button>`;
                 }
 
                 kitchenHtml += `
@@ -1254,10 +1320,14 @@
                         <div class="card-items">${itemsStr}</div>
                         ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
+                        ${silenceBtnHtml}
                         ${btnHtml}
                     </div>`;
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
+
+            // 即時觸發音效邏輯
+            checkKitchenPickupTimeReminders();
 
             // 2. 渲染【出餐頁面】
             function passOrderSort(a, b) {
@@ -1301,7 +1371,6 @@
                 const readyBtnClass = isReadyOrDone ? "status-btn btn-ready active-state" : "status-btn btn-ready";
                 const doneBtnClass = isPickedUp ? "status-btn btn-done active-state" : "status-btn btn-done";
 
-                // 📌 當「已出餐」點擊後，整張卡片背景變成灰暗色 (completed 樣式)
                 let cardClass = "";
                 if (isReadyOrDone) cardClass = "completed";
 
