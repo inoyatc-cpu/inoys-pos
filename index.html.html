@@ -428,10 +428,7 @@
                 <div class="wheel-box" id="minuteWheel" onscroll="onWheelScroll('minuteWheel')"></div>
             </div>
 
-            <div style="display:flex; gap:8px; margin-top:15px;">
-                <button onclick="clearPickerTime()" style="flex:1; padding:12px; background:#e0e0e0; color:#333; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
-                    即時出餐
-                </button>
+            <div style="display:flex; gap:10px; margin-top:15px;">
                 <button onclick="closeTimePickerModal()" style="flex:1; padding:12px; background:#888; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
                     取消
                 </button>
@@ -681,17 +678,6 @@
             } else {
                 document.getElementById('editSelectedPickupTime').value = timeStr;
                 document.getElementById('editPickupTimeBtn').innerText = displayStr;
-            }
-            closeTimePickerModal();
-        }
-
-        function clearPickerTime() {
-            if (activePickerTarget === 'pos') {
-                document.getElementById('selectedPickupTime').value = '';
-                document.getElementById('pickupTimeBtn').innerText = '⏰ 按此選擇取餐時間 (預設: 即時)';
-            } else {
-                document.getElementById('editSelectedPickupTime').value = '';
-                document.getElementById('editPickupTimeBtn').innerText = '⏰ 修改取餐時間 (預設: 即時)';
             }
             closeTimePickerModal();
         }
