@@ -114,6 +114,12 @@
         .form-input { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ccc; border-radius: 8px; outline: none; }
         .form-input:focus { border-color: #ff9800; }
         
+        .time-picker-btn {
+            width: 100%; padding: 12px; font-size: 1.15rem; font-weight: bold;
+            background: #e3f2fd; color: #0d47a1; border: 2px solid #64b5f6;
+            border-radius: 8px; cursor: pointer; text-align: center; margin-bottom: 6px;
+        }
+
         /* 備註快捷鍵樣式 */
         .note-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
         .note-tag { 
@@ -192,6 +198,29 @@
             padding: 6px 10px; font-size: 1rem; border: 2px solid #ff9800; border-radius: 6px; font-weight: bold; outline: none; background: #fff;
         }
 
+        /* 🛞 雙輪時間選擇器 Modal 樣式 */
+        .wheel-container {
+            display: flex; justify-content: space-around; align-items: center;
+            height: 180px; margin: 15px 0; background: #f8f9fa; border-radius: 12px;
+            border: 2px solid #e0e0e0; position: relative; overflow: hidden;
+        }
+        .wheel-box {
+            width: 45%; height: 100%; overflow-y: scroll;
+            scroll-snap-type: y mandatory; text-align: center;
+            -ms-overflow-style: none; scrollbar-width: none;
+        }
+        .wheel-box::-webkit-scrollbar { display: none; }
+        .wheel-item {
+            height: 50px; line-height: 50px; font-size: 1.4rem; font-weight: bold;
+            color: #555; scroll-snap-align: center; cursor: pointer;
+        }
+        .wheel-item.selected { color: #ff9800; font-size: 1.7rem; font-weight: 900; }
+        .wheel-highlight {
+            position: absolute; top: 65px; left: 5%; width: 90%; height: 50px;
+            border-top: 2px solid #ff9800; border-bottom: 2px solid #ff9800;
+            pointer-events: none; background: rgba(255,152,0,0.08);
+        }
+
         /* 通用 Modal 彈窗 (修改 & 落單確認) */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
@@ -231,7 +260,7 @@
             <h2>🔐 Inoya POS 系統</h2>
             <p>請輸入授權密碼進入系統</p>
             <input type="password" id="accessPass" class="auth-input" placeholder="請輸入密碼" pattern="[0-9]*" inputmode="numeric">
-            <button class="auth-btn" onclick="checkPassword()">解鎖登入</button>
+            <button class="auth-btn" id="loginBtn" onclick="checkPassword()">解鎖登入</button>
             <div id="errorMsg" class="error-msg">⚠️ 密碼錯誤，請重新輸入！</div>
         </div>
     </div>
@@ -293,9 +322,10 @@
             
             <div class="input-row">
                 <label style="font-weight:bold; font-size:1rem; color:#444;">取餐時間（選填）：</label>
-                <select id="pickupTimeSelect" class="form-input" style="font-weight:bold; color:#0d47a1;">
-                    <!-- JavaScript 動態生成 5分鐘間隔時間 -->
-                </select>
+                <button type="button" id="pickupTimeBtn" class="time-picker-btn" onclick="openTimePickerModal('pos')">
+                    ⏰ 按此選擇取餐時間 (預設: 即時)
+                </button>
+                <input type="hidden" id="selectedPickupTime" value="">
 
                 <label style="font-weight:bold; font-size:1rem; color:#444; margin-top:4px;">備註：</label>
                 <div class="note-tags-container">
@@ -384,6 +414,39 @@
         </div>
     </div>
 
+    <!-- 🛞 雙輪時間選擇器 Modal -->
+    <div id="timePickerModal" class="modal-overlay">
+        <div class="modal-content" style="text-align:center;">
+            <h3 style="margin-top:0; font-size:1.3rem; border-bottom:2px solid #ff9800; padding-bottom:8px; color:#222;">
+                ⏰ 選擇取餐時間
+            </h3>
+            
+            <div style="display:flex; justify-content:space-around; font-weight:bold; color:#666; margin-top:8px;">
+                <span>小時 (24小時制)</span>
+                <span>分鐘 (5分鐘跳格)</span>
+            </div>
+
+            <div class="wheel-container">
+                <div class="wheel-highlight"></div>
+                <div class="wheel-box" id="hourWheel" onscroll="onWheelScroll('hourWheel')"></div>
+                <div style="font-size:1.5rem; font-weight:bold; color:#ff9800;">:</div>
+                <div class="wheel-box" id="minuteWheel" onscroll="onWheelScroll('minuteWheel')"></div>
+            </div>
+
+            <div style="display:flex; gap:8px; margin-top:15px;">
+                <button onclick="clearPickerTime()" style="flex:1; padding:12px; background:#e0e0e0; color:#333; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
+                    清空 (即時)
+                </button>
+                <button onclick="closeTimePickerModal()" style="flex:1; padding:12px; background:#888; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
+                    取消
+                </button>
+                <button onclick="confirmPickerTime()" style="flex:1; padding:12px; background:#2e7d32; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
+                    確定
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- 📋 前台落單「確定 / 取消」確認彈窗 Modal -->
     <div id="confirmModal" class="modal-overlay">
         <div class="modal-content">
@@ -424,7 +487,10 @@
             
             <div style="margin-bottom:10px;">
                 <label style="font-weight:bold; font-size:1rem;">取餐時間：</label>
-                <select id="editPickupTime" class="form-input" style="padding:8px; font-size:1rem; color:#0d47a1; font-weight:bold;"></select>
+                <button type="button" id="editPickupTimeBtn" class="time-picker-btn" style="margin-top:4px;" onclick="openTimePickerModal('edit')">
+                    ⏰ 修改取餐時間
+                </button>
+                <input type="hidden" id="editSelectedPickupTime" value="">
             </div>
 
             <div style="margin-bottom:10px;">
@@ -452,7 +518,7 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         
-        // 📌 菜單標準順序與分類表 (已刪除特餐)
+        // 📌 菜單標準順序與分類表
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
@@ -484,6 +550,7 @@
         };
 
         let currentRawData = {};
+        let activePickerTarget = 'pos'; // 'pos' 或 'edit'
 
         function getTodayYMD() {
             const now = new Date();
@@ -493,44 +560,149 @@
             return `${y}-${m}-${d}`;
         }
 
-        // ⏰ 生成 5分鐘為單位 的取餐時間選單 (00:00 - 23:55)
-        function generateTimeOptions(selectElementId, includeEmpty = true) {
-            const selectEl = document.getElementById(selectElementId);
-            selectEl.innerHTML = '';
-
-            if (includeEmpty) {
-                const defaultOpt = document.createElement('option');
-                defaultOpt.value = '';
-                defaultOpt.innerText = '-- 即時出餐 (未指定時間) --';
-                selectEl.appendChild(defaultOpt);
+        /* 🔐 解鎖邏輯修復 */
+        function checkPassword() {
+            const inputPass = document.getElementById('accessPass').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            if (inputPass === SYSTEM_PASSWORD) {
+                document.getElementById('authOverlay').style.display = 'none';
+                safeSetStorage('isAuthorized', 'true');
+                errorMsg.style.display = 'none';
+                document.getElementById('accessPass').value = '';
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('accessPass').value = '';
             }
+        }
 
-            const now = new Date();
-            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
-            let closestMinDiff = Infinity;
-            let closestValue = '';
+        function lockSystem() {
+            try { localStorage.removeItem('isAuthorized'); } catch(e){}
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
 
+        /* 🛞 雙輪滾輪邏輯初始化 */
+        function initTimeWheels() {
+            const hWheel = document.getElementById('hourWheel');
+            const mWheel = document.getElementById('minuteWheel');
+
+            let hHtml = '<div class="wheel-item" style="height:65px;"></div>';
             for (let h = 0; h < 24; h++) {
-                for (let m = 0; m < 60; m += 5) {
-                    const timeStr = String(h).padStart(2, '0') + String(m).padStart(2, '0');
-                    const formattedTime = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
-                    
-                    const opt = document.createElement('option');
-                    opt.value = timeStr;
-                    opt.innerText = `${timeStr} (${formattedTime})`;
-                    selectEl.appendChild(opt);
+                const val = String(h).padStart(2, '0');
+                hHtml += `<div class="wheel-item" data-val="${val}">${val}</div>`;
+            }
+            hHtml += '<div class="wheel-item" style="height:65px;"></div>';
+            hWheel.innerHTML = hHtml;
 
-                    // 計算最接近現在的時間
-                    const optTotalMinutes = h * 60 + m;
-                    const diff = Math.abs(optTotalMinutes - currentTotalMinutes);
-                    if (diff < closestMinDiff) {
-                        closestMinDiff = diff;
-                        closestValue = timeStr;
-                    }
-                }
+            let mHtml = '<div class="wheel-item" style="height:65px;"></div>';
+            for (let m = 0; m < 60; m += 5) {
+                const val = String(m).padStart(2, '0');
+                mHtml += `<div class="wheel-item" data-val="${val}">${val}</div>`;
+            }
+            mHtml += '<div class="wheel-item" style="height:65px;"></div>';
+            mWheel.innerHTML = mHtml;
+        }
+
+        function openTimePickerModal(target) {
+            activePickerTarget = target;
+            const modal = document.getElementById('timePickerModal');
+            modal.style.display = 'flex';
+
+            let currentVal = '';
+            if (target === 'pos') {
+                currentVal = document.getElementById('selectedPickupTime').value;
+            } else {
+                currentVal = document.getElementById('editSelectedPickupTime').value;
             }
 
-            return closestValue;
+            let targetH = '', targetM = '';
+
+            if (currentVal && currentVal.length === 4) {
+                targetH = currentVal.substring(0, 2);
+                targetM = currentVal.substring(2, 4);
+            } else {
+                // 自動捕捉最接近現在的時間（如 21:03 ➔ 21:05）
+                const now = new Date();
+                let h = now.getHours();
+                let m = Math.round(now.getMinutes() / 5) * 5;
+                if (m >= 60) {
+                    m = 0;
+                    h = (h + 1) % 24;
+                }
+                targetH = String(h).padStart(2, '0');
+                targetM = String(m).padStart(2, '0');
+            }
+
+            setTimeout(() => {
+                scrollWheelToValue('hourWheel', targetH);
+                scrollWheelToValue('minuteWheel', targetM);
+            }, 50);
+        }
+
+        function scrollWheelToValue(wheelId, val) {
+            const wheel = document.getElementById(wheelId);
+            const items = wheel.querySelectorAll('.wheel-item[data-val]');
+            items.forEach((item, idx) => {
+                if (item.getAttribute('data-val') === val) {
+                    wheel.scrollTop = idx * 50;
+                }
+            });
+            highlightWheelSelected(wheelId);
+        }
+
+        function onWheelScroll(wheelId) {
+            highlightWheelSelected(wheelId);
+        }
+
+        function highlightWheelSelected(wheelId) {
+            const wheel = document.getElementById(wheelId);
+            const items = wheel.querySelectorAll('.wheel-item[data-val]');
+            const index = Math.round(wheel.scrollTop / 50);
+            
+            items.forEach((item, idx) => {
+                if (idx === index) item.classList.add('selected');
+                else item.classList.remove('selected');
+            });
+        }
+
+        function getWheelSelectedValue(wheelId) {
+            const wheel = document.getElementById(wheelId);
+            const items = wheel.querySelectorAll('.wheel-item[data-val]');
+            const index = Math.round(wheel.scrollTop / 50);
+            if (items[index]) {
+                return items[index].getAttribute('data-val');
+            }
+            return '00';
+        }
+
+        function confirmPickerTime() {
+            const h = getWheelSelectedValue('hourWheel');
+            const m = getWheelSelectedValue('minuteWheel');
+            const timeStr = `${h}${m}`;
+            const displayStr = `⏰ 取餐時間: ${h}:${m}`;
+
+            if (activePickerTarget === 'pos') {
+                document.getElementById('selectedPickupTime').value = timeStr;
+                document.getElementById('pickupTimeBtn').innerText = displayStr;
+            } else {
+                document.getElementById('editSelectedPickupTime').value = timeStr;
+                document.getElementById('editPickupTimeBtn').innerText = displayStr;
+            }
+            closeTimePickerModal();
+        }
+
+        function clearPickerTime() {
+            if (activePickerTarget === 'pos') {
+                document.getElementById('selectedPickupTime').value = '';
+                document.getElementById('pickupTimeBtn').innerText = '⏰ 按此選擇取餐時間 (預設: 即時)';
+            } else {
+                document.getElementById('editSelectedPickupTime').value = '';
+                document.getElementById('editPickupTimeBtn').innerText = '⏰ 修改取餐時間 (預設: 即時)';
+            }
+            closeTimePickerModal();
+        }
+
+        function closeTimePickerModal() {
+            document.getElementById('timePickerModal').style.display = 'none';
         }
 
         function appendNote(text) {
@@ -553,25 +725,6 @@
         function safeSetStorage(key, value) { try { localStorage.setItem(key, value); } catch(e){} }
         function safeGetStorage(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
 
-        function checkPassword() {
-            const inputPass = document.getElementById('accessPass').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-            if (inputPass === SYSTEM_PASSWORD) {
-                document.getElementById('authOverlay').style.display = 'none';
-                safeSetStorage('isAuthorized', 'true');
-                errorMsg.style.display = 'none';
-                document.getElementById('accessPass').value = '';
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('accessPass').value = '';
-            }
-        }
-
-        function lockSystem() {
-            try { localStorage.removeItem('isAuthorized'); } catch(e){}
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-
         window.addEventListener('DOMContentLoaded', () => {
             if (safeGetStorage('isAuthorized') === 'true') {
                 document.getElementById('authOverlay').style.display = 'none';
@@ -583,7 +736,7 @@
             });
 
             document.getElementById('statsDatePicker').value = getTodayYMD();
-            generateTimeOptions('pickupTimeSelect', true);
+            initTimeWheels();
         });
 
         const firebaseConfig = {
@@ -678,10 +831,11 @@
             });
             document.getElementById('confirmItemList').innerHTML = html;
 
-            const pickupTime = document.getElementById('pickupTimeSelect').value;
+            const pickupTimeRaw = document.getElementById('selectedPickupTime').value;
             const timeBox = document.getElementById('confirmPickupTimeBox');
-            if (pickupTime) {
-                timeBox.innerText = `⏰ 取餐時間：${pickupTime}`;
+            if (pickupTimeRaw && pickupTimeRaw.length === 4) {
+                const formatted = `${pickupTimeRaw.substring(0,2)}:${pickupTimeRaw.substring(2,4)}`;
+                timeBox.innerText = `⏰ 取餐時間：${formatted}`;
                 timeBox.style.display = 'block';
             } else {
                 timeBox.style.display = 'none';
@@ -704,11 +858,15 @@
             document.getElementById('confirmModal').style.display = 'none';
         }
 
-        /* 🚀 執行提交訂單（已移除原本的多餘 alert 提示框） */
         function submitOrder() {
             closeConfirmModal();
             const note = document.getElementById('orderNote').value.trim();
-            const pickupTime = document.getElementById('pickupTimeSelect').value;
+            const pickupTimeRaw = document.getElementById('selectedPickupTime').value;
+            let pickupTime = '';
+            if (pickupTimeRaw && pickupTimeRaw.length === 4) {
+                pickupTime = `${pickupTimeRaw.substring(0,2)}:${pickupTimeRaw.substring(2,4)}`;
+            }
+
             const seqNum = getNextSeqNo();
             const seq = String(seqNum).padStart(3, '0');
             
@@ -734,10 +892,11 @@
                 renderAllViews(localOrders);
             }
 
-            // 清空購物車與設定，自動跳回頂部
+            // 清空購物車與設定
             cart = [];
             document.getElementById('orderNote').value = '';
-            document.getElementById('pickupTimeSelect').value = '';
+            document.getElementById('selectedPickupTime').value = '';
+            document.getElementById('pickupTimeBtn').innerText = '⏰ 按此選擇取餐時間 (預設: 即時)';
             renderCart();
             updateNextSeqDisplay();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -768,8 +927,15 @@
             document.getElementById('editModalTitle').innerText = `✏️ 修改訂單 #${order.seqNo}`;
             document.getElementById('editNote').value = order.note || '';
 
-            generateTimeOptions('editPickupTime', true);
-            document.getElementById('editPickupTime').value = order.pickupTime || '';
+            const pTime = order.pickupTime || '';
+            const rawVal = pTime.replace(':', '');
+            document.getElementById('editSelectedPickupTime').value = rawVal;
+            
+            if (pTime) {
+                document.getElementById('editPickupTimeBtn').innerText = `⏰ 取餐時間: ${pTime}`;
+            } else {
+                document.getElementById('editPickupTimeBtn').innerText = `⏰ 修改取餐時間 (預設: 即時)`;
+            }
 
             editingCart = JSON.parse(JSON.stringify(order.items || []));
             sortCartByMenuOrder(editingCart);
@@ -829,7 +995,11 @@
             if (editingCart.length === 0) return alert('修改後的訂單不能沒有餐點！如需刪除請直接使用刪除按鈕。');
 
             const note = document.getElementById('editNote').value.trim();
-            const pickupTime = document.getElementById('editPickupTime').value;
+            const pickupTimeRaw = document.getElementById('editSelectedPickupTime').value;
+            let pickupTime = '';
+            if (pickupTimeRaw && pickupTimeRaw.length === 4) {
+                pickupTime = `${pickupTimeRaw.substring(0,2)}:${pickupTimeRaw.substring(2,4)}`;
+            }
             const total = document.getElementById('editTotalPrice').innerText;
 
             const updates = {
