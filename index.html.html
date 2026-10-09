@@ -221,7 +221,7 @@
             pointer-events: none; background: rgba(255,152,0,0.08);
         }
 
-        /* 通用 Modal 彈窗 (修改 & 落單確認) */
+        /* 通用 Modal 彈窗 */
         .modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.7); z-index: 9000; display: none;
@@ -420,11 +420,6 @@
             <h3 style="margin-top:0; font-size:1.3rem; border-bottom:2px solid #ff9800; padding-bottom:8px; color:#222;">
                 ⏰ 選擇取餐時間
             </h3>
-            
-            <div style="display:flex; justify-content:space-around; font-weight:bold; color:#666; margin-top:8px;">
-                <span>小時 (24小時制)</span>
-                <span>分鐘 (5分鐘跳格)</span>
-            </div>
 
             <div class="wheel-container">
                 <div class="wheel-highlight"></div>
@@ -435,7 +430,7 @@
 
             <div style="display:flex; gap:8px; margin-top:15px;">
                 <button onclick="clearPickerTime()" style="flex:1; padding:12px; background:#e0e0e0; color:#333; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
-                    清空 (即時)
+                    即時出餐
                 </button>
                 <button onclick="closeTimePickerModal()" style="flex:1; padding:12px; background:#888; color:white; border:none; border-radius:8px; font-weight:bold; font-size:1rem; cursor:pointer;">
                     取消
@@ -447,7 +442,7 @@
         </div>
     </div>
 
-    <!-- 📋 前台落單「確定 / 取消」確認彈窗 Modal -->
+    <!-- 📋 前台落單確認彈窗 Modal -->
     <div id="confirmModal" class="modal-overlay">
         <div class="modal-content">
             <h3 style="margin-top:0; font-size:1.4rem; text-align:center; border-bottom:2px solid #ff9800; padding-bottom:8px; color:#222;">
@@ -560,7 +555,7 @@
             return `${y}-${m}-${d}`;
         }
 
-        /* 🔐 解鎖邏輯修復 */
+        /* 🔐 解鎖邏輯 */
         function checkPassword() {
             const inputPass = document.getElementById('accessPass').value.trim();
             const errorMsg = document.getElementById('errorMsg');
@@ -620,7 +615,7 @@
                 targetH = currentVal.substring(0, 2);
                 targetM = currentVal.substring(2, 4);
             } else {
-                // 自動捕捉最接近現在的時間（如 21:03 ➔ 21:05）
+                // 自動捕捉最接近現在的時間
                 const now = new Date();
                 let h = now.getHours();
                 let m = Math.round(now.getMinutes() / 5) * 5;
