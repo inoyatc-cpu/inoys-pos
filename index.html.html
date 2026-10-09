@@ -154,10 +154,10 @@
         .order-card { 
             background: white; width: 100%; border-radius: 12px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 8px solid #ff9800; padding: 10px; 
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; transition: all 0.2s;
         }
-        .order-card.ready { border-top-color: #2e7d32; }
-        .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.8; }
+        .order-card.ready { border-top-color: #e65100; background: #fff8f0; }
+        .order-card.completed { background: #e0e0e0 !important; border-top-color: #2e7d32 !important; opacity: 0.85; }
 
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 4px; }
         .card-actions { display: flex; gap: 6px; margin: 6px 0; justify-content: flex-end; }
@@ -178,10 +178,16 @@
         .card-note { background: #fffde7; padding: 6px 8px; border-radius: 6px; color: #c62828; font-size: 1rem; font-weight: bold; margin-bottom: 8px; border: 1px solid #fff59d; word-break: break-all; }
         .card-pickup-time { background: #e3f2fd; color: #0d47a1; padding: 6px 8px; border-radius: 6px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; border: 1px solid #90caf9; }
         
+        /* 雙按鈕群組 */
+        .status-btn-group { display: flex; gap: 6px; margin-top: auto; }
+        .status-btn-group .status-btn { flex: 1; margin-top: 0; padding: 12px 4px; font-size: 1rem; }
+
         .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
-        .btn-ready { background: #2e7d32; box-shadow: 0 3px 6px rgba(46,125,50,0.3); }
-        .btn-done { background: #616161; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .btn-ready { background: #e65100; box-shadow: 0 3px 6px rgba(230,81,0,0.3); }
+        .btn-ready.active-state { background: #bf360c; outline: 3px solid #ff9800; }
+        .btn-done { background: #2e7d32; box-shadow: 0 3px 6px rgba(46,125,50,0.3); }
+        .btn-done.active-state { background: #1b5e20; outline: 3px solid #81c784; }
 
         /* === 3. 統計區塊樣式 === */
         .stats-box { padding: 15px; background: white; margin: 12px 10px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
@@ -612,7 +618,6 @@
                 targetH = currentVal.substring(0, 2);
                 targetM = currentVal.substring(2, 4);
             } else {
-                // 自動捕捉最接近現在的時間
                 const now = new Date();
                 let h = now.getHours();
                 let m = Math.round(now.getMinutes() / 5) * 5;
@@ -862,6 +867,7 @@
                 pickupTime: pickupTime,
                 time: timeStr,
                 status: 'pending',
+                isPickedUp: false,
                 isDeleted: false,
                 timestamp: Date.now()
             };
@@ -888,6 +894,16 @@
                 db.ref('orders/' + id + '/status').set(newStatus);
             } else {
                 if (localOrders[id]) localOrders[id].status = newStatus;
+                renderAllViews(localOrders);
+            }
+        }
+
+        function toggleOrderPickedUp(id, currentPickedUp) {
+            const nextState = !currentPickedUp;
+            if (db) {
+                db.ref('orders/' + id + '/isPickedUp').set(nextState);
+            } else {
+                if (localOrders[id]) localOrders[id].isPickedUp = nextState;
                 renderAllViews(localOrders);
             }
         }
@@ -1036,11 +1052,12 @@
                 .map(k => {
                     const item = data[k];
                     const status = item.status || 'pending';
+                    const isPickedUp = !!item.isPickedUp;
                     
                     let sortedItems = item.items ? [...item.items] : [];
                     sortCartByMenuOrder(sortedItems);
 
-                    return { id: k, ...item, items: sortedItems, status: status };
+                    return { id: k, ...item, items: sortedItems, status: status, isPickedUp: isPickedUp };
                 })
                 .filter(o => {
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
@@ -1114,20 +1131,25 @@
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
             // 2. 渲染【出餐頁面】
+            // 📌 出餐排序原則：
+            // 未出餐 (pending) 優先於 已出餐 (ready/done)
+            // 未出餐：單號小排先 (numA - numB)
+            // 已出餐：單號大排先 (numB - numA)
+            // 是否領取 (isPickedUp) 不影響此排序！
             function passOrderSort(a, b) {
-                const isDoneA = (a.status === 'done');
-                const isDoneB = (b.status === 'done');
+                const isReadyOrDoneA = (a.status === 'ready' || a.status === 'done');
+                const isReadyOrDoneB = (b.status === 'ready' || b.status === 'done');
 
-                if (!isDoneA && isDoneB) return -1;
-                if (isDoneA && !isDoneB) return 1;
+                if (!isReadyOrDoneA && isReadyOrDoneB) return -1;
+                if (isReadyOrDoneA && !isReadyOrDoneB) return 1;
 
                 const numA = parseInt(a.seqNo, 10) || 0;
                 const numB = parseInt(b.seqNo, 10) || 0;
 
-                if (!isDoneA && !isDoneB) {
-                    return numA - numB;
+                if (!isReadyOrDoneA && !isReadyOrDoneB) {
+                    return numA - numB; // 未出餐：小單號在前
                 } else {
-                    return numB - numA;
+                    return numB - numA; // 已出餐：大單號在前
                 }
             }
 
@@ -1145,21 +1167,23 @@
                     </div>`;
                 }).join('');
 
-                const isReady = (o.status === 'ready');
-                const isDone = (o.status === 'done');
+                const isReadyOrDone = (o.status === 'ready' || o.status === 'done');
+                const isPickedUp = !!o.isPickedUp;
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
-                let btnHtml = '';
-                if (o.status === 'pending') {
-                    btnHtml = `<button class="status-btn btn-cooking" style="background:#757575;" disabled>⌛ 廚房製作中...</button>`;
-                } else if (o.status === 'ready') {
-                    btnHtml = `<button class="status-btn btn-ready" onclick="updateOrderStatus('${o.id}', 'done')">🔔 叫號出餐 (完成)</button>`;
-                } else {
-                    btnHtml = `<button class="status-btn btn-done" onclick="updateOrderStatus('${o.id}', 'ready')">✅ 已領取 (按此重呼)</button>`;
-                }
+                // 按鈕切換狀態
+                const readyBtnText = isReadyOrDone ? "橙: 已出餐 ✓" : "橙: 已出餐";
+                const doneBtnText = isPickedUp ? "綠: 已領取 ✓" : "綠: 已領取";
+
+                const readyBtnClass = isReadyOrDone ? "status-btn btn-ready active-state" : "status-btn btn-ready";
+                const doneBtnClass = isPickedUp ? "status-btn btn-done active-state" : "status-btn btn-done";
+
+                let cardClass = "";
+                if (isReadyOrDone) cardClass = "ready";
+                if (isPickedUp) cardClass = "completed";
 
                 passHtml += `
-                    <div class="order-card ${isReady ? 'ready' : (isDone ? 'completed' : '')}">
+                    <div class="order-card ${cardClass}">
                         <div class="card-header">
                             <span>#${o.seqNo}</span>
                             <span>${o.time}</span>
@@ -1175,7 +1199,10 @@
                         </div>
                         ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        ${btnHtml}
+                        <div class="status-btn-group">
+                            <button class="${readyBtnClass}" onclick="updateOrderStatus('${o.id}', '${isReadyOrDone ? 'pending' : 'ready'}')">${readyBtnText}</button>
+                            <button class="${doneBtnClass}" onclick="toggleOrderPickedUp('${o.id}', ${isPickedUp})">${doneBtnText}</button>
+                        </div>
                     </div>`;
             });
             document.getElementById('passOrders').innerHTML = passHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">📢 暫無出餐訂單</h3>';
