@@ -169,9 +169,13 @@
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 8px solid #ff9800; padding: 10px; 
             display: flex; flex-direction: column; transition: all 0.2s;
         }
-        /* 出餐後整張單變淡橘色 */
-        .order-card.ready { border-top-color: #e65100; background: #fff3e0 !important; }
-        .order-card.completed { border-top-color: #757575 !important; }
+        
+        /* 灰底暗淡感效果：已出餐卡片變為灰色底色並降透明度 */
+        .order-card.completed { 
+            background: #e0e0e0 !important; 
+            border-top-color: #757575 !important; 
+            opacity: 0.75; 
+        }
 
         /* ⏰ 廚房 10 分鐘即將到期卡片閃爍效果 */
         .order-card.urgent-warning {
@@ -386,16 +390,14 @@
         </div>
     </div>
 
-    <!-- 2. 廚房製作頁面 -->
+    <!-- 2. 廚房製作頁面 (已移除標題列) -->
     <div id="kitchen" class="page">
-        <div style="padding:8px; color:#fff; font-size:1.1rem; font-weight:bold; text-align:center;">👨‍🍳 廚房做餐顯示屏 (Kitchen View)</div>
-        <div class="kds-container" id="kitchenOrders"></div>
+        <div class="kds-container" id="kitchenOrders" style="padding-top:15px;"></div>
     </div>
 
-    <!-- 3. 出餐/叫號頁面 -->
+    <!-- 3. 出餐/叫號頁面 (已移除標題列) -->
     <div id="pass" class="page">
-        <div style="padding:8px; color:#fff; font-size:1.1rem; font-weight:bold; text-align:center;">🔔 出餐叫號控制台 (Pass View)</div>
-        <div class="kds-container" id="passOrders"></div>
+        <div class="kds-container" id="passOrders" style="padding-top:15px;"></div>
     </div>
 
     <!-- 4. 統計頁面 -->
@@ -1293,16 +1295,15 @@
                 const isPickedUp = !!o.isPickedUp;
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
-                // 移除「橙:」與「綠:」，採用簡潔文案
                 const readyBtnText = isReadyOrDone ? "已出餐 ✓" : "未出餐";
                 const doneBtnText = isPickedUp ? "已領取 ✓" : "未領取";
 
                 const readyBtnClass = isReadyOrDone ? "status-btn btn-ready active-state" : "status-btn btn-ready";
                 const doneBtnClass = isPickedUp ? "status-btn btn-done active-state" : "status-btn btn-done";
 
-                // 已出餐時，整張卡片變淡橘色 (ready 樣式)
+                // 📌 當「已出餐」點擊後，整張卡片背景變成灰暗色 (completed 樣式)
                 let cardClass = "";
-                if (isReadyOrDone) cardClass = "ready";
+                if (isReadyOrDone) cardClass = "completed";
 
                 passHtml += `
                     <div class="order-card ${cardClass}">
