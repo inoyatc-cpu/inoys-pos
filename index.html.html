@@ -114,6 +114,14 @@
         .form-input { width: 100%; padding: 12px; font-size: 1.1rem; border: 2px solid #ccc; border-radius: 8px; outline: none; }
         .form-input:focus { border-color: #ff9800; }
         
+        /* 備註快捷鍵樣式 */
+        .note-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
+        .note-tag { 
+            background: #f0f0f0; border: 1px solid #ccc; border-radius: 16px; 
+            padding: 6px 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer; color: #333;
+        }
+        .note-tag:active { background: #ff9800; color: white; border-color: #e65100; }
+
         .cart-items { margin-bottom: 10px; border-bottom: 2px dashed #ddd; padding-bottom: 8px; }
         .cart-item { display: flex; justify-content: space-between; font-size: 1.2rem; margin-bottom: 8px; font-weight: 600; }
         
@@ -162,6 +170,7 @@
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
         .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 4px; font-weight: 900; font-size: 1.2rem; color: #c62828; margin-bottom: 6px; }
         .card-note { background: #fffde7; padding: 6px 8px; border-radius: 6px; color: #c62828; font-size: 1rem; font-weight: bold; margin-bottom: 8px; border: 1px solid #fff59d; word-break: break-all; }
+        .card-pickup-time { background: #e3f2fd; color: #0d47a1; padding: 6px 8px; border-radius: 6px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; border: 1px solid #90caf9; }
         
         .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
@@ -247,7 +256,6 @@
                 <div class="item-card item-don" onclick="addToCart('鳥丼', 40, '丼飯')">鳥丼 $40</div>
                 <div class="item-card item-don" onclick="addToCart('豚丼', 40, '丼飯')">豚丼 $40</div>
                 <div class="item-card item-don" onclick="addToCart('泡豚', 40, '丼飯')">泡豚 $40</div>
-                <div class="item-card item-don" onclick="addToCart('特餐', 32, '丼飯')">特餐 $32</div>
             </div>
 
             <div class="category-title cat-noodle">冷麵</div>
@@ -284,7 +292,22 @@
             <div class="cart-title">🛒 已選餐點列表</div>
             
             <div class="input-row">
-                <input type="text" id="orderNote" class="form-input" placeholder="備註 (選填，例如：少辣 / 走蔥)">
+                <label style="font-weight:bold; font-size:1rem; color:#444;">取餐時間（選填）：</label>
+                <select id="pickupTimeSelect" class="form-input" style="font-weight:bold; color:#0d47a1;">
+                    <!-- JavaScript 動態生成 5分鐘間隔時間 -->
+                </select>
+
+                <label style="font-weight:bold; font-size:1rem; color:#444; margin-top:4px;">備註：</label>
+                <div class="note-tags-container">
+                    <button class="note-tag" onclick="appendNote('多飯')">+ 多飯</button>
+                    <button class="note-tag" onclick="appendNote('少飯')">+ 少飯</button>
+                    <button class="note-tag" onclick="appendNote('多汁')">+ 多汁</button>
+                    <button class="note-tag" onclick="appendNote('走汁')">+ 走汁</button>
+                    <button class="note-tag" onclick="appendNote('少汁')">+ 少汁</button>
+                    <button class="note-tag" onclick="appendNote('走洋蔥')">+ 走洋蔥</button>
+                    <button class="note-tag" onclick="appendNote('煎蛋')">+ 煎蛋</button>
+                </div>
+                <input type="text" id="orderNote" class="form-input" placeholder="備註 (選填，可點擊上方按鈕或自行輸入)">
             </div>
 
             <div class="cart-items" id="cartList">
@@ -373,7 +396,9 @@
             </div>
 
             <div id="confirmItemList" style="border:1px solid #eee; background:#fafafa; border-radius:8px; padding:10px; max-height:200px; overflow-y:auto;"></div>
-            <div id="confirmNoteBox" style="margin-top:8px; color:#c62828; font-weight:bold; font-size:1rem; display:none;"></div>
+            
+            <div id="confirmPickupTimeBox" style="margin-top:8px; color:#0d47a1; font-weight:bold; font-size:1rem; display:none;"></div>
+            <div id="confirmNoteBox" style="margin-top:4px; color:#c62828; font-weight:bold; font-size:1rem; display:none;"></div>
 
             <div class="confirm-total-box">
                 <div style="font-size:1rem; font-weight:bold; color:#666;">應收總金額</div>
@@ -397,6 +422,11 @@
             <h3 style="margin-top:0; font-size:1.3rem; border-bottom:2px solid #ff9800; padding-bottom:6px;" id="editModalTitle">✏️ 修改訂單</h3>
             <input type="hidden" id="editOrderId">
             
+            <div style="margin-bottom:10px;">
+                <label style="font-weight:bold; font-size:1rem;">取餐時間：</label>
+                <select id="editPickupTime" class="form-input" style="padding:8px; font-size:1rem; color:#0d47a1; font-weight:bold;"></select>
+            </div>
+
             <div style="margin-bottom:10px;">
                 <label style="font-weight:bold; font-size:1rem;">備註：</label>
                 <input type="text" id="editNote" class="form-input" style="padding:8px; font-size:1rem;">
@@ -422,12 +452,11 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         
-        // 📌 菜單標準順序與分類表
+        // 📌 菜單標準順序與分類表 (已刪除特餐)
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
             { name: '泡豚', price: 40, category: '丼飯' },
-            { name: '特餐', price: 32, category: '丼飯' },
             { name: 'A(螺)', price: 28, category: '冷麵' }, 
             { name: 'B(腸)', price: 28, category: '冷麵' }, 
             { name: 'C(翼)', price: 35, category: '冷麵' }, 
@@ -462,6 +491,55 @@
             const m = String(now.getMonth() + 1).padStart(2, '0');
             const d = String(now.getDate()).padStart(2, '0');
             return `${y}-${m}-${d}`;
+        }
+
+        // ⏰ 生成 5分鐘為單位 的取餐時間選單 (00:00 - 23:55)
+        function generateTimeOptions(selectElementId, includeEmpty = true) {
+            const selectEl = document.getElementById(selectElementId);
+            selectEl.innerHTML = '';
+
+            if (includeEmpty) {
+                const defaultOpt = document.createElement('option');
+                defaultOpt.value = '';
+                defaultOpt.innerText = '-- 即時出餐 (未指定時間) --';
+                selectEl.appendChild(defaultOpt);
+            }
+
+            const now = new Date();
+            const currentTotalMinutes = now.getHours() * 60 + now.getMinutes();
+            let closestMinDiff = Infinity;
+            let closestValue = '';
+
+            for (let h = 0; h < 24; h++) {
+                for (let m = 0; m < 60; m += 5) {
+                    const timeStr = String(h).padStart(2, '0') + String(m).padStart(2, '0');
+                    const formattedTime = String(h).padStart(2, '0') + ':' + String(m).padStart(2, '0');
+                    
+                    const opt = document.createElement('option');
+                    opt.value = timeStr;
+                    opt.innerText = `${timeStr} (${formattedTime})`;
+                    selectEl.appendChild(opt);
+
+                    // 計算最接近現在的時間
+                    const optTotalMinutes = h * 60 + m;
+                    const diff = Math.abs(optTotalMinutes - currentTotalMinutes);
+                    if (diff < closestMinDiff) {
+                        closestMinDiff = diff;
+                        closestValue = timeStr;
+                    }
+                }
+            }
+
+            return closestValue;
+        }
+
+        function appendNote(text) {
+            const noteInput = document.getElementById('orderNote');
+            if (noteInput.value.trim() === '') {
+                noteInput.value = text;
+            } else {
+                noteInput.value += ' ' + text;
+            }
         }
 
         function sortCartByMenuOrder(cartArray) {
@@ -505,6 +583,7 @@
             });
 
             document.getElementById('statsDatePicker').value = getTodayYMD();
+            generateTimeOptions('pickupTimeSelect', true);
         });
 
         const firebaseConfig = {
@@ -599,6 +678,15 @@
             });
             document.getElementById('confirmItemList').innerHTML = html;
 
+            const pickupTime = document.getElementById('pickupTimeSelect').value;
+            const timeBox = document.getElementById('confirmPickupTimeBox');
+            if (pickupTime) {
+                timeBox.innerText = `⏰ 取餐時間：${pickupTime}`;
+                timeBox.style.display = 'block';
+            } else {
+                timeBox.style.display = 'none';
+            }
+
             const note = document.getElementById('orderNote').value.trim();
             const noteBox = document.getElementById('confirmNoteBox');
             if (note) {
@@ -616,9 +704,11 @@
             document.getElementById('confirmModal').style.display = 'none';
         }
 
+        /* 🚀 執行提交訂單（已移除原本的多餘 alert 提示框） */
         function submitOrder() {
             closeConfirmModal();
             const note = document.getElementById('orderNote').value.trim();
+            const pickupTime = document.getElementById('pickupTimeSelect').value;
             const seqNum = getNextSeqNo();
             const seq = String(seqNum).padStart(3, '0');
             
@@ -630,6 +720,7 @@
                 items: cart,
                 total: document.getElementById('totalPrice').innerText,
                 note: note,
+                pickupTime: pickupTime,
                 time: timeStr,
                 status: 'pending',
                 isDeleted: false,
@@ -643,9 +734,10 @@
                 renderAllViews(localOrders);
             }
 
-            alert(`✅ 單據已發送！\n流水號：#${seq}`);
+            // 清空購物車與設定，自動跳回頂部
             cart = [];
             document.getElementById('orderNote').value = '';
+            document.getElementById('pickupTimeSelect').value = '';
             renderCart();
             updateNextSeqDisplay();
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -675,6 +767,9 @@
             document.getElementById('editOrderId').value = order.id;
             document.getElementById('editModalTitle').innerText = `✏️ 修改訂單 #${order.seqNo}`;
             document.getElementById('editNote').value = order.note || '';
+
+            generateTimeOptions('editPickupTime', true);
+            document.getElementById('editPickupTime').value = order.pickupTime || '';
 
             editingCart = JSON.parse(JSON.stringify(order.items || []));
             sortCartByMenuOrder(editingCart);
@@ -734,10 +829,12 @@
             if (editingCart.length === 0) return alert('修改後的訂單不能沒有餐點！如需刪除請直接使用刪除按鈕。');
 
             const note = document.getElementById('editNote').value.trim();
+            const pickupTime = document.getElementById('editPickupTime').value;
             const total = document.getElementById('editTotalPrice').innerText;
 
             const updates = {
                 note: note,
+                pickupTime: pickupTime,
                 items: editingCart,
                 total: total
             };
@@ -752,7 +849,6 @@
             }
 
             closeEditModal();
-            alert('✅ 訂單內容已更新！');
         }
 
         function onDateChange() {
@@ -807,21 +903,21 @@
                     return !o.isDeleted && inRange;
                 });
 
-            // 🍳 廚房專屬排序與邏輯：只區分「未完成」與「已完成」，完全不管/隱藏出餐狀態
+            // 🍳 廚房排序：未完成優先 (小單號在前)，已完成沉底 (大單號在前)
             function kitchenOrderSort(a, b) {
-                const isKitchenDoneA = (a.status !== 'pending'); // 只要不是 pending 就是廚房已完成
+                const isKitchenDoneA = (a.status !== 'pending'); 
                 const isKitchenDoneB = (b.status !== 'pending');
 
-                if (!isKitchenDoneA && isKitchenDoneB) return -1; // 未完成排前面
-                if (isKitchenDoneA && !isKitchenDoneB) return 1;  // 已完成沉底
+                if (!isKitchenDoneA && isKitchenDoneB) return -1; 
+                if (isKitchenDoneA && !isKitchenDoneB) return 1;  
 
                 const numA = parseInt(a.seqNo, 10) || 0;
                 const numB = parseInt(b.seqNo, 10) || 0;
 
                 if (!isKitchenDoneA && !isKitchenDoneB) {
-                    return numA - numB; // 未完成：小單號優先 (001 ➔ 002)
+                    return numA - numB; 
                 } else {
-                    return numB - numA; // 已完成：大單號優先 (005 ➔ 004)
+                    return numB - numA; 
                 }
             }
 
@@ -859,13 +955,14 @@
                             <button class="action-btn del" onclick="deleteOrder('${o.id}', '${o.seqNo}')">🗑️ 刪除</button>
                         </div>
                         <div class="card-items">${itemsStr}</div>
+                        ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
                         ${btnHtml}
                     </div>`;
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
-            // 2. 渲染【出餐頁面】 (保留原本叫號與出餐邏輯)
+            // 2. 渲染【出餐頁面】
             function passOrderSort(a, b) {
                 const isDoneA = (a.status === 'done');
                 const isDoneB = (b.status === 'done');
@@ -925,6 +1022,7 @@
                             <span>總計:</span>
                             <span>$${o.total || 0}</span>
                         </div>
+                        ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
                         ${btnHtml}
                     </div>`;
