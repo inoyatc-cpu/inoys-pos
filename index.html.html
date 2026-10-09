@@ -66,7 +66,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.4); width: 85%; max-width: 320px;
         }
 
-        /* 🔔 廚房新單提示橫幅 (無按鈕) */
+        /* 🔔 廚房專屬無按鈕提示橫幅 */
         #kitchenAlertBanner {
             position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
             padding: 12px 24px; font-size: 1.2rem; font-weight: 900; color: white;
@@ -170,6 +170,7 @@
             display: flex; flex-direction: column; transition: all 0.2s;
         }
         
+        /* 已出餐卡片變灰色且變暗淡 */
         .order-card.completed { 
             background: #e0e0e0 !important; 
             border-top-color: #757575 !important; 
@@ -218,16 +219,10 @@
         .card-note { background: #fffde7; padding: 6px 8px; border-radius: 6px; color: #c62828; font-size: 1rem; font-weight: bold; margin-bottom: 8px; border: 1px solid #fff59d; word-break: break-all; }
         .card-pickup-time { background: #e3f2fd; color: #0d47a1; padding: 6px 8px; border-radius: 6px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; border: 1px solid #90caf9; }
         
-        /* 雙按鈕群組 */
-        .status-btn-group { display: flex; gap: 6px; margin-top: auto; }
-        .status-btn-group .status-btn { flex: 1; margin-top: 0; padding: 12px 4px; font-size: 1.05rem; }
-
         .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
-        .btn-ready { background: #9e9e9e; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .btn-ready { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
         .btn-ready.active-state { background: #e65100; box-shadow: 0 3px 6px rgba(230,81,0,0.3); }
-        .btn-done { background: #9e9e9e; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
-        .btn-done.active-state { background: #2e7d32; box-shadow: 0 3px 6px rgba(46,125,50,0.3); }
 
         /* === 3. 統計區塊樣式 === */
         .stats-box { padding: 15px; background: white; margin: 12px 10px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
@@ -594,9 +589,9 @@
 
         // 🔊 Web Audio API 音效產生器
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let alarmInterval = null; // 🔊 蜂鳴器計時器
-        let activeAlarmOrders = new Set(); // 正在鳴響提示音的訂單 ID 集合
-        let silencedPickupOrders = new Set(); // 已手動按鈕關閉提示音的訂單 ID 集合
+        let alarmInterval = null; 
+        let activeAlarmOrders = new Set(); 
+        let silencedPickupOrders = new Set(); 
 
         function playBeepSound(freq = 880, type = 'sine', duration = 0.2) {
             try {
@@ -619,7 +614,6 @@
             setTimeout(() => playBeepSound(1174.66, 'sine', 0.25), 180);
         }
 
-        // 🔊 開始持續急促警報聲
         function startLoopingAlarm() {
             if (!alarmInterval) {
                 alarmInterval = setInterval(() => {
@@ -640,7 +634,6 @@
             }
         }
 
-        // 🔕 手動關閉特定訂單的倒數提示音
         function silenceOrderAlarm(orderId) {
             silencedPickupOrders.add(orderId);
             activeAlarmOrders.delete(orderId);
@@ -650,7 +643,6 @@
             renderAllViews(currentRawData);
         }
 
-        // 🔔 廚房專屬無按鈕提示橫幅 (新單用)
         function showKitchenBanner(msg, bgColor = '#ff9800', duration = 1500) {
             const banner = document.getElementById('kitchenAlertBanner');
             banner.innerText = msg;
@@ -835,7 +827,6 @@
             document.getElementById('statsDatePicker').value = getTodayYMD();
             initTimeWheels();
 
-            // 每 10 秒檢查一次是否有單據需要觸發/關閉倒數提醒
             setInterval(checkKitchenPickupTimeReminders, 10000);
         });
 
@@ -878,7 +869,6 @@
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 1500);
 
-            // 如果離開廚房頁面，立即停用持續提示音
             if (role !== 'kitchen') {
                 stopLoopingAlarm();
             } else {
@@ -1012,7 +1002,6 @@
         }
 
         function updateOrderStatus(id, newStatus) {
-            // 如完成做餐，清理該單提示音狀態
             if (newStatus !== 'pending') {
                 activeAlarmOrders.delete(id);
                 if (activeAlarmOrders.size === 0) stopLoopingAlarm();
@@ -1021,16 +1010,6 @@
                 db.ref('orders/' + id + '/status').set(newStatus);
             } else {
                 if (localOrders[id]) localOrders[id].status = newStatus;
-                renderAllViews(localOrders);
-            }
-        }
-
-        function toggleOrderPickedUp(id, currentPickedUp) {
-            const nextState = !currentPickedUp;
-            if (db) {
-                db.ref('orders/' + id + '/isPickedUp').set(nextState);
-            } else {
-                if (localOrders[id]) localOrders[id].isPickedUp = nextState;
                 renderAllViews(localOrders);
             }
         }
@@ -1129,6 +1108,8 @@
             }
             const total = document.getElementById('editTotalPrice').innerText;
 
+            silencedPickupOrders.delete(id);
+
             const updates = {
                 note: note,
                 pickupTime: pickupTime,
@@ -1157,7 +1138,6 @@
             renderAllViews(currentRawData);
         }
 
-        // ⏰ 檢查廚房單據取餐時間（前 10 分鐘響警報）
         function checkKitchenPickupTimeReminders() {
             if (currentRole !== 'kitchen' || !currentRawData) return;
 
@@ -1168,14 +1148,12 @@
                 const o = currentRawData[k];
                 if (!o || o.isDeleted || (o.timestamp && o.timestamp < startOfToday)) return;
                 
-                // 僅針對未完成 (pending) 且有指定取餐時間的單據
                 if ((!o.status || o.status === 'pending') && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
                     if (parts.length === 2) {
                         const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0], 10), parseInt(parts[1], 10));
                         const diffMinutes = (targetTime.getTime() - now.getTime()) / (1000 * 60);
 
-                        // 進入 10 分鐘倒數範圍
                         if (diffMinutes <= 10 && diffMinutes >= -30) {
                             if (!silencedPickupOrders.has(k)) {
                                 activeAlarmOrders.add(k);
@@ -1240,7 +1218,6 @@
                     return !o.isDeleted && inRange;
                 });
 
-            // 🍳 廚房新單提示 (僅在廚房頁面觸發，彈出 1.5 秒自動消失畫面，不含按鈕)
             const pendingKitchenOrders = todayActiveOrders.filter(o => o.status === 'pending');
             if (currentRole === 'kitchen') {
                 if (lastOrderCountKitchen !== -1 && pendingKitchenOrders.length > lastOrderCountKitchen) {
@@ -1290,7 +1267,6 @@
                     btnHtml = `<button class="status-btn btn-done active-state" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
                 }
 
-                // 判斷是否屬於取餐前 10 分鐘緊急狀態
                 let isUrgent = false;
                 if (!isKitchenDone && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
@@ -1301,9 +1277,8 @@
                     }
                 }
 
-                // 若處於緊急狀態且聲音尚未關閉，加入「關閉提醒」按鈕
                 let silenceBtnHtml = '';
-                if (isUrgent && activeAlarmOrders.has(o.id)) {
+                if (isUrgent && !silencedPickupOrders.has(o.id)) {
                     silenceBtnHtml = `<button class="silence-btn" onclick="silenceOrderAlarm('${o.id}')">🔕 關閉提醒 (停止提示音)</button>`;
                 }
 
@@ -1326,7 +1301,6 @@
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
-            // 即時觸發音效邏輯
             checkKitchenPickupTimeReminders();
 
             // 2. 渲染【出餐頁面】
@@ -1362,14 +1336,11 @@
                 }).join('');
 
                 const isReadyOrDone = (o.status === 'ready' || o.status === 'done');
-                const isPickedUp = !!o.isPickedUp;
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
+                // 只保留未出餐 / 已出餐
                 const readyBtnText = isReadyOrDone ? "已出餐 ✓" : "未出餐";
-                const doneBtnText = isPickedUp ? "已領取 ✓" : "未領取";
-
                 const readyBtnClass = isReadyOrDone ? "status-btn btn-ready active-state" : "status-btn btn-ready";
-                const doneBtnClass = isPickedUp ? "status-btn btn-done active-state" : "status-btn btn-done";
 
                 let cardClass = "";
                 if (isReadyOrDone) cardClass = "completed";
@@ -1391,10 +1362,7 @@
                         </div>
                         ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        <div class="status-btn-group">
-                            <button class="${readyBtnClass}" onclick="updateOrderStatus('${o.id}', '${isReadyOrDone ? 'pending' : 'ready'}')">${readyBtnText}</button>
-                            <button class="${doneBtnClass}" onclick="toggleOrderPickedUp('${o.id}', ${isPickedUp})">${doneBtnText}</button>
-                        </div>
+                        <button class="${readyBtnClass}" onclick="updateOrderStatus('${o.id}', '${isReadyOrDone ? 'pending' : 'ready'}')">${readyBtnText}</button>
                     </div>`;
             });
             document.getElementById('passOrders').innerHTML = passHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">📢 暫無出餐訂單</h3>';
