@@ -170,7 +170,7 @@
             display: flex; flex-direction: column; transition: all 0.2s;
         }
         
-        /* 已出餐卡片變灰色且變暗淡 */
+        /* 出餐頁面已出餐卡片變灰色且變暗淡 */
         .order-card.completed { 
             background: #e0e0e0 !important; 
             border-top-color: #757575 !important; 
@@ -221,6 +221,9 @@
         
         .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
+        .btn-done { background: #757575; box-shadow: 0 3px 6px rgba(0,0,0,0.1); }
+        .btn-done.active-state { background: #2e7d32; box-shadow: 0 3px 6px rgba(46,125,50,0.3); }
+        
         .btn-ready { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
         .btn-ready.active-state { background: #e65100; box-shadow: 0 3px 6px rgba(230,81,0,0.3); }
 
@@ -979,8 +982,8 @@
                 note: note,
                 pickupTime: pickupTime,
                 time: timeStr,
-                status: 'pending',
-                isPickedUp: false,
+                status: 'pending',     // 廚房狀態
+                passStatus: 'pending', // 出餐狀態 (兩者獨立)
                 isDeleted: false,
                 timestamp: Date.now()
             };
@@ -995,13 +998,14 @@
             cart = [];
             document.getElementById('orderNote').value = '';
             document.getElementById('selectedPickupTime').value = '';
-            document.getElementById('pickupTimeBtn').innerText = '⏰ 按此選擇取餐時間 (預設: 即時)';
+            document.getElementById('pickupTimeBtn').innerText = '⏰ 按此選擇取餐時間 (預設:即時)';
             renderCart();
             updateNextSeqDisplay();
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
-        function updateOrderStatus(id, newStatus) {
+        // 👨‍🍳 廚房專屬狀態更新
+        function updateKitchenStatus(id, newStatus) {
             if (newStatus !== 'pending') {
                 activeAlarmOrders.delete(id);
                 if (activeAlarmOrders.size === 0) stopLoopingAlarm();
@@ -1010,6 +1014,16 @@
                 db.ref('orders/' + id + '/status').set(newStatus);
             } else {
                 if (localOrders[id]) localOrders[id].status = newStatus;
+                renderAllViews(localOrders);
+            }
+        }
+
+        // 🔔 出餐專屬狀態更新 (獨立)
+        function updatePassStatus(id, newStatus) {
+            if (db) {
+                db.ref('orders/' + id + '/passStatus').set(newStatus);
+            } else {
+                if (localOrders[id]) localOrders[id].passStatus = newStatus;
                 renderAllViews(localOrders);
             }
         }
@@ -1199,12 +1213,12 @@
                 .map(k => {
                     const item = data[k];
                     const status = item.status || 'pending';
-                    const isPickedUp = !!item.isPickedUp;
+                    const passStatus = item.passStatus || 'pending';
                     
                     let sortedItems = item.items ? [...item.items] : [];
                     sortCartByMenuOrder(sortedItems);
 
-                    return { id: k, ...item, items: sortedItems, status: status, isPickedUp: isPickedUp };
+                    return { id: k, ...item, items: sortedItems, status: status, passStatus: passStatus };
                 })
                 .filter(o => {
                     const isToday = o.timestamp && o.timestamp >= startOfToday;
@@ -1262,9 +1276,9 @@
 
                 let btnHtml = '';
                 if (!isKitchenDone) {
-                    btnHtml = `<button class="status-btn btn-cooking" onclick="updateOrderStatus('${o.id}', 'ready')">👨‍🍳 煮好出單</button>`;
+                    btnHtml = `<button class="status-btn btn-cooking" onclick="updateKitchenStatus('${o.id}', 'ready')">👨‍🍳 煮好出單</button>`;
                 } else {
-                    btnHtml = `<button class="status-btn btn-done active-state" onclick="updateOrderStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
+                    btnHtml = `<button class="status-btn btn-done active-state" onclick="updateKitchenStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
                 }
 
                 let isUrgent = false;
@@ -1303,10 +1317,10 @@
 
             checkKitchenPickupTimeReminders();
 
-            // 2. 渲染【出餐頁面】
+            // 2. 渲染【出餐頁面】 (狀態獨立控制)
             function passOrderSort(a, b) {
-                const isReadyOrDoneA = (a.status === 'ready' || a.status === 'done');
-                const isReadyOrDoneB = (b.status === 'ready' || b.status === 'done');
+                const isReadyOrDoneA = (a.passStatus === 'ready' || a.passStatus === 'done');
+                const isReadyOrDoneB = (b.passStatus === 'ready' || b.passStatus === 'done');
 
                 if (!isReadyOrDoneA && isReadyOrDoneB) return -1;
                 if (isReadyOrDoneA && !isReadyOrDoneB) return 1;
@@ -1315,9 +1329,9 @@
                 const numB = parseInt(b.seqNo, 10) || 0;
 
                 if (!isReadyOrDoneA && !isReadyOrDoneB) {
-                    return numA - numB; // 未出餐：小單號在前
+                    return numA - numB; 
                 } else {
-                    return numB - numA; // 已出餐：大單號在前
+                    return numB - numA; 
                 }
             }
 
@@ -1335,15 +1349,14 @@
                     </div>`;
                 }).join('');
 
-                const isReadyOrDone = (o.status === 'ready' || o.status === 'done');
+                const isPassReady = (o.passStatus === 'ready' || o.passStatus === 'done');
                 const rawJson = JSON.stringify(o).replace(/'/g, "&apos;");
 
-                // 只保留未出餐 / 已出餐
-                const readyBtnText = isReadyOrDone ? "已出餐 ✓" : "未出餐";
-                const readyBtnClass = isReadyOrDone ? "status-btn btn-ready active-state" : "status-btn btn-ready";
+                const readyBtnText = isPassReady ? "已出餐 ✓" : "未出餐";
+                const readyBtnClass = isPassReady ? "status-btn btn-ready active-state" : "status-btn btn-ready";
 
                 let cardClass = "";
-                if (isReadyOrDone) cardClass = "completed";
+                if (isPassReady) cardClass = "completed";
 
                 passHtml += `
                     <div class="order-card ${cardClass}">
@@ -1362,7 +1375,7 @@
                         </div>
                         ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        <button class="${readyBtnClass}" onclick="updateOrderStatus('${o.id}', '${isReadyOrDone ? 'pending' : 'ready'}')">${readyBtnText}</button>
+                        <button class="${readyBtnClass}" onclick="updatePassStatus('${o.id}', '${isPassReady ? 'pending' : 'ready'}')">${readyBtnText}</button>
                     </div>`;
             });
             document.getElementById('passOrders').innerHTML = passHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">📢 暫無出餐訂單</h3>';
