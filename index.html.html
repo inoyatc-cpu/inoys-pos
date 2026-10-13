@@ -117,12 +117,27 @@
         .item-other { background: #e0e0e0; color: #333; border-color: #bdbdbd; }
         .item-card.special-item { background: #c5cae9; color: #1a237e; border-color: #7986cb; }
 
-        /* 🥤 汽水包裝專屬配色按鈕 */
-        .item-coke { background: #ffcdd2; color: #b71c1c; border-color: #ef5350; }
-        .item-zero { background: #424242; color: #ffffff; border-color: #212121; }
-        .item-sprite { background: #c8e6c9; color: #1b5e20; border-color: #66bb6a; }
-        .item-fanta { background: #ffe0b2; color: #e65100; border-color: #ff9800; }
-        .item-cream { background: #fff9c4; color: #f57f17; border-color: #fbc02d; }
+        /* 🥤 汽水包裝精準配色按鈕 */
+        .item-coke { 
+            background: #E61C24; color: #ffffff; border-color: #b71c1c; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .item-zero { 
+            background: #1E1E1E; color: #ffffff; border-color: #E61C24; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
+        .item-sprite { 
+            background: #008A44; color: #ffffff; border: 3px solid #FFD100; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+        }
+        .item-fanta { 
+            background: #FF6600; color: #ffffff; border-color: #002F6C; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+        }
+        .item-cream { 
+            background: #006B3F; color: #FFF176; border: 3px solid #FBC02D; 
+            text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+        }
 
         /* 購物車區塊 */
         .cart-container { 
@@ -358,6 +373,14 @@
                 <div class="item-card item-snack" onclick="addToCart('雞翼', 5, '小食')">雞翼 $5</div>
             </div>
 
+            <div class="category-title cat-other">其他</div>
+            <div class="grid">
+                <div class="item-card item-other" onclick="addToCart('加蛋($4)', 4, '其他')">加蛋 $4</div>
+                <div class="item-card item-other" onclick="addToCart('加腸', 6, '其他')">加腸 $6</div>
+                <div class="item-card item-other" onclick="addToCart('保馬', 2, '其他')">保馬 $2</div>
+                <div class="item-card item-other" onclick="addToCart('差價', 1, '其他')">差價 $1</div>
+            </div>
+
             <div class="category-title cat-drink-single">飲品 (單點)</div>
             <div class="grid">
                 <div class="item-card item-drink-single" onclick="addToCart('泰奶', 5, '飲品')">泰奶 $5</div>
@@ -368,14 +391,6 @@
                 <div class="item-card item-sprite" onclick="addToCart('雪碧', 6, '飲品')">雪碧 $6</div>
                 <div class="item-card item-fanta" onclick="addToCart('芬達', 6, '飲品')">芬達 $6</div>
                 <div class="item-card item-cream" onclick="addToCart('忌廉', 6, '飲品')">忌廉 $6</div>
-            </div>
-
-            <div class="category-title cat-other">其他</div>
-            <div class="grid">
-                <div class="item-card item-other" onclick="addToCart('加蛋($4)', 4, '其他')">加蛋 $4</div>
-                <div class="item-card item-other" onclick="addToCart('加腸', 6, '其他')">加腸 $6</div>
-                <div class="item-card item-other" onclick="addToCart('保馬', 2, '其他')">保馬 $2</div>
-                <div class="item-card item-other" onclick="addToCart('差價', 1, '其他')">差價 $1</div>
             </div>
         </div>
 
@@ -589,6 +604,10 @@
             { name: '忌廉(跟餐)', price: 3, category: '跟餐飲品' },
             { name: '煎餃', price: 20, category: '小食' }, 
             { name: '雞翼', price: 5, category: '小食' },
+            { name: '加蛋($4)', price: 4, category: '其他' }, 
+            { name: '加腸', price: 6, category: '其他' }, 
+            { name: '保馬', price: 2, category: '其他' }, 
+            { name: '差價', price: 1, category: '其他' },
             { name: '泰奶', price: 5, category: '飲品' },
             { name: '冬檸', price: 5, category: '飲品' },
             { name: '烏龍', price: 5, category: '飲品' },
@@ -596,11 +615,7 @@
             { name: 'Zero', price: 6, category: '飲品' },
             { name: '雪碧', price: 6, category: '飲品' },
             { name: '芬達', price: 6, category: '飲品' },
-            { name: '忌廉', price: 6, category: '飲品' },
-            { name: '加蛋($4)', price: 4, category: '其他' }, 
-            { name: '加腸', price: 6, category: '其他' }, 
-            { name: '保馬', price: 2, category: '其他' }, 
-            { name: '差價', price: 1, category: '其他' }
+            { name: '忌廉', price: 6, category: '飲品' }
         ];
 
         const ITEM_LOOKUP = {};
