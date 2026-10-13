@@ -66,7 +66,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.4); width: 85%; max-width: 320px;
         }
 
-        /* 🔔 廚房專屬無按鈕提示橫幅 */
+        /* ⏰ 廚房 10 分鐘取餐提示橫幅 */
         #kitchenAlertBanner {
             position: fixed; top: 60px; left: 50%; transform: translateX(-50%);
             padding: 12px 24px; font-size: 1.2rem; font-weight: 900; color: white;
@@ -95,7 +95,8 @@
         .cat-don { border-left-color: #e65100; color: #d84315; }
         .cat-noodle { border-left-color: #0d47a1; color: #1565c0; }
         .cat-snack { border-left-color: #f57f17; color: #f57f17; }
-        .cat-drink { border-left-color: #1b5e20; color: #2e7d32; }
+        .cat-drink-set { border-left-color: #1b5e20; color: #2e7d32; }
+        .cat-drink-single { border-left-color: #00838f; color: #006064; }
         .cat-other { border-left-color: #616161; color: #424242; }
 
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
@@ -112,8 +113,16 @@
         .item-noodle { background: #bbdefb; color: #0d47a1; border-color: #64b5f6; }
         .item-snack { background: #fff9c4; color: #f57f17; border-color: #fff176; }
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
+        .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
         .item-other { background: #e0e0e0; color: #333; border-color: #bdbdbd; }
         .item-card.special-item { background: #c5cae9; color: #1a237e; border-color: #7986cb; }
+
+        /* 🥤 汽水包裝專屬配色按鈕 */
+        .item-coke { background: #ffcdd2; color: #b71c1c; border-color: #ef5350; }
+        .item-zero { background: #424242; color: #ffffff; border-color: #212121; }
+        .item-sprite { background: #c8e6c9; color: #1b5e20; border-color: #66bb6a; }
+        .item-fanta { background: #ffe0b2; color: #e65100; border-color: #ff9800; }
+        .item-cream { background: #fff9c4; color: #f57f17; border-color: #fbc02d; }
 
         /* 購物車區塊 */
         .cart-container { 
@@ -170,7 +179,7 @@
             display: flex; flex-direction: column; transition: all 0.2s;
         }
         
-        /* 出餐頁面已出餐卡片變灰色且變暗淡 */
+        /* 已完成卡片變灰色且變暗淡 */
         .order-card.completed { 
             background: #e0e0e0 !important; 
             border-top-color: #757575 !important; 
@@ -187,17 +196,6 @@
         @keyframes urgentBlink {
             0% { box-shadow: 0 0 5px #d32f2f; }
             100% { box-shadow: 0 0 20px #d32f2f; }
-        }
-
-        .silence-btn {
-            background: #d32f2f; color: white; border: none; padding: 10px;
-            font-size: 1.05rem; font-weight: 900; border-radius: 8px; cursor: pointer;
-            margin-bottom: 8px; width: 100%; box-shadow: 0 2px 6px rgba(211,47,47,0.4);
-            animation: pulseBtn 0.8s infinite alternate;
-        }
-        @keyframes pulseBtn {
-            0% { transform: scale(1); }
-            100% { transform: scale(1.02); }
         }
 
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 4px; }
@@ -321,7 +319,7 @@
     <!-- 切換模式 Toast 提示 -->
     <div id="modeToast">已切換模式</div>
 
-    <!-- 🔔 廚房專屬無按鈕提示橫幅 -->
+    <!-- ⏰ 廚房 10 分鐘取餐提示橫幅 -->
     <div id="kitchenAlertBanner"></div>
 
     <!-- 1. 前台落單頁面 -->
@@ -342,17 +340,34 @@
                 <div class="item-card special-item" onclick="addToCart('C(餃)', 35, '冷麵')">C(餃) $35</div>
             </div>
 
-            <div class="category-title cat-drink">飲品</div>
+            <div class="category-title cat-drink-set">跟餐飲品</div>
             <div class="grid">
-                <div class="item-card item-drink" onclick="addToCart('泰奶', 0, '飲品')">泰奶 $0</div>
-                <div class="item-card item-drink" onclick="addToCart('冬檸', 0, '飲品')">冬檸 $0</div>
-                <div class="item-card item-drink" onclick="addToCart('烏龍', 0, '飲品')">烏龍 $0</div>
+                <div class="item-card item-drink" onclick="addToCart('泰奶(跟餐)', 0, '跟餐飲品')">泰奶 $0</div>
+                <div class="item-card item-drink" onclick="addToCart('冬檸(跟餐)', 0, '跟餐飲品')">冬檸 $0</div>
+                <div class="item-card item-drink" onclick="addToCart('烏龍(跟餐)', 0, '跟餐飲品')">烏龍 $0</div>
+                <div class="item-card item-coke" onclick="addToCart('可樂(跟餐)', 3, '跟餐飲品')">可樂 $3</div>
+                <div class="item-card item-zero" onclick="addToCart('Zero(跟餐)', 3, '跟餐飲品')">Zero $3</div>
+                <div class="item-card item-sprite" onclick="addToCart('雪碧(跟餐)', 3, '跟餐飲品')">雪碧 $3</div>
+                <div class="item-card item-fanta" onclick="addToCart('芬達(跟餐)', 3, '跟餐飲品')">芬達 $3</div>
+                <div class="item-card item-cream" onclick="addToCart('忌廉(跟餐)', 3, '跟餐飲品')">忌廉 $3</div>
             </div>
 
             <div class="category-title cat-snack">小食</div>
             <div class="grid">
                 <div class="item-card item-snack" onclick="addToCart('煎餃', 20, '小食')">煎餃 $20</div>
                 <div class="item-card item-snack" onclick="addToCart('雞翼', 5, '小食')">雞翼 $5</div>
+            </div>
+
+            <div class="category-title cat-drink-single">飲品 (單點)</div>
+            <div class="grid">
+                <div class="item-card item-drink-single" onclick="addToCart('泰奶', 5, '飲品')">泰奶 $5</div>
+                <div class="item-card item-drink-single" onclick="addToCart('冬檸', 5, '飲品')">冬檸 $5</div>
+                <div class="item-card item-drink-single" onclick="addToCart('烏龍', 5, '飲品')">烏龍 $5</div>
+                <div class="item-card item-coke" onclick="addToCart('可樂', 6, '飲品')">可樂 $6</div>
+                <div class="item-card item-zero" onclick="addToCart('Zero', 6, '飲品')">Zero $6</div>
+                <div class="item-card item-sprite" onclick="addToCart('雪碧', 6, '飲品')">雪碧 $6</div>
+                <div class="item-card item-fanta" onclick="addToCart('芬達', 6, '飲品')">芬達 $6</div>
+                <div class="item-card item-cream" onclick="addToCart('忌廉', 6, '飲品')">忌廉 $6</div>
             </div>
 
             <div class="category-title cat-other">其他</div>
@@ -564,11 +579,24 @@
             { name: 'B(腸)', price: 28, category: '冷麵' }, 
             { name: 'C(翼)', price: 35, category: '冷麵' }, 
             { name: 'C(餃)', price: 35, category: '冷麵' },
-            { name: '泰奶', price: 0, category: '飲品' }, 
-            { name: '冬檸', price: 0, category: '飲品' }, 
-            { name: '烏龍', price: 0, category: '飲品' },
+            { name: '泰奶(跟餐)', price: 0, category: '跟餐飲品' }, 
+            { name: '冬檸(跟餐)', price: 0, category: '跟餐飲品' }, 
+            { name: '烏龍(跟餐)', price: 0, category: '跟餐飲品' },
+            { name: '可樂(跟餐)', price: 3, category: '跟餐飲品' },
+            { name: 'Zero(跟餐)', price: 3, category: '跟餐飲品' },
+            { name: '雪碧(跟餐)', price: 3, category: '跟餐飲品' },
+            { name: '芬達(跟餐)', price: 3, category: '跟餐飲品' },
+            { name: '忌廉(跟餐)', price: 3, category: '跟餐飲品' },
             { name: '煎餃', price: 20, category: '小食' }, 
             { name: '雞翼', price: 5, category: '小食' },
+            { name: '泰奶', price: 5, category: '飲品' },
+            { name: '冬檸', price: 5, category: '飲品' },
+            { name: '烏龍', price: 5, category: '飲品' },
+            { name: '可樂', price: 6, category: '飲品' },
+            { name: 'Zero', price: 6, category: '飲品' },
+            { name: '雪碧', price: 6, category: '飲品' },
+            { name: '芬達', price: 6, category: '飲品' },
+            { name: '忌廉', price: 6, category: '飲品' },
             { name: '加蛋($4)', price: 4, category: '其他' }, 
             { name: '加腸', price: 6, category: '其他' }, 
             { name: '保馬', price: 2, category: '其他' }, 
@@ -579,6 +607,7 @@
         ALL_MENU_ITEMS.forEach(item => { ITEM_LOOKUP[item.name] = item; });
 
         const CAT_CLASS_MAP = {
+            '跟餐飲品': 'cat-item-drink',
             '飲品': 'cat-item-drink',
             '丼飯': 'cat-item-don',
             '冷麵': 'cat-item-noodle',
@@ -590,63 +619,40 @@
         let activePickerTarget = 'pos'; // 'pos' 或 'edit'
         let currentRole = 'pos';
 
-        // 🔊 Web Audio API 音效產生器
+        // 🔊 Web Audio API 提示音
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-        let alarmInterval = null; 
-        let activeAlarmOrders = new Set(); 
-        let silencedPickupOrders = new Set(); 
+        let alertedOrdersSet = new Set(); // 記錄已提示過的 10 分鐘訂單，避免重複響音
 
-        function playBeepSound(freq = 880, type = 'sine', duration = 0.2) {
+        function playAlertSound() {
             try {
                 if (audioCtx.state === 'suspended') audioCtx.resume();
                 const osc = audioCtx.createOscillator();
                 const gain = audioCtx.createGain();
-                osc.type = type;
-                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                osc.type = 'triangle';
+                osc.frequency.setValueAtTime(659.25, audioCtx.currentTime);
                 gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
-                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.3);
                 osc.connect(gain);
                 gain.connect(audioCtx.destination);
                 osc.start();
-                osc.stop(audioCtx.currentTime + duration);
+                osc.stop(audioCtx.currentTime + 0.3);
+
+                setTimeout(() => {
+                    const osc2 = audioCtx.createOscillator();
+                    const gain2 = audioCtx.createGain();
+                    osc2.type = 'triangle';
+                    osc2.frequency.setValueAtTime(880, audioCtx.currentTime);
+                    gain2.gain.setValueAtTime(0.3, audioCtx.currentTime);
+                    gain2.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.4);
+                    osc2.connect(gain2);
+                    gain2.connect(audioCtx.destination);
+                    osc2.start();
+                    osc2.stop(audioCtx.currentTime + 0.4);
+                }, 200);
             } catch(e) {}
         }
 
-        function playNewOrderSound() {
-            playBeepSound(880, 'sine', 0.15);
-            setTimeout(() => playBeepSound(1174.66, 'sine', 0.25), 180);
-        }
-
-        function startLoopingAlarm() {
-            if (!alarmInterval) {
-                alarmInterval = setInterval(() => {
-                    if (currentRole === 'kitchen' && activeAlarmOrders.size > 0) {
-                        playBeepSound(659.25, 'triangle', 0.25);
-                        setTimeout(() => playBeepSound(880, 'triangle', 0.25), 200);
-                    } else {
-                        stopLoopingAlarm();
-                    }
-                }, 800);
-            }
-        }
-
-        function stopLoopingAlarm() {
-            if (alarmInterval) {
-                clearInterval(alarmInterval);
-                alarmInterval = null;
-            }
-        }
-
-        function silenceOrderAlarm(orderId) {
-            silencedPickupOrders.add(orderId);
-            activeAlarmOrders.delete(orderId);
-            if (activeAlarmOrders.size === 0) {
-                stopLoopingAlarm();
-            }
-            renderAllViews(currentRawData);
-        }
-
-        function showKitchenBanner(msg, bgColor = '#ff9800', duration = 1500) {
+        function showKitchenBanner(msg, bgColor = '#d32f2f', duration = 3000) {
             const banner = document.getElementById('kitchenAlertBanner');
             banner.innerText = msg;
             banner.style.backgroundColor = bgColor;
@@ -830,7 +836,8 @@
             document.getElementById('statsDatePicker').value = getTodayYMD();
             initTimeWheels();
 
-            setInterval(checkKitchenPickupTimeReminders, 10000);
+            // 每 10 秒自動檢查一次廚房 10 分鐘倒數警報
+            setInterval(checkKitchen10MinAlerts, 10000);
         });
 
         const firebaseConfig = {
@@ -856,7 +863,6 @@
         let localOrders = {};
         let editingCart = [];
         let currentMaxSeq = 0;
-        let lastOrderCountKitchen = -1;
 
         function switchRole(role) {
             currentRole = role;
@@ -872,10 +878,8 @@
             toast.style.display = 'block';
             setTimeout(() => { toast.style.display = 'none'; }, 1500);
 
-            if (role !== 'kitchen') {
-                stopLoopingAlarm();
-            } else {
-                checkKitchenPickupTimeReminders();
+            if (role === 'kitchen') {
+                checkKitchen10MinAlerts();
             }
         }
 
@@ -983,7 +987,7 @@
                 pickupTime: pickupTime,
                 time: timeStr,
                 status: 'pending',     // 廚房狀態
-                passStatus: 'pending', // 出餐狀態 (兩者獨立)
+                passStatus: 'pending', // 出餐狀態 (獨立)
                 isDeleted: false,
                 timestamp: Date.now()
             };
@@ -1006,10 +1010,6 @@
 
         // 👨‍🍳 廚房專屬狀態更新
         function updateKitchenStatus(id, newStatus) {
-            if (newStatus !== 'pending') {
-                activeAlarmOrders.delete(id);
-                if (activeAlarmOrders.size === 0) stopLoopingAlarm();
-            }
             if (db) {
                 db.ref('orders/' + id + '/status').set(newStatus);
             } else {
@@ -1030,9 +1030,6 @@
 
         function deleteOrder(id, seqNo) {
             if (confirm(`⚠️ 確定要刪除單號 #${seqNo} 嗎？此動作會在畫面上隱藏該單。`)) {
-                activeAlarmOrders.delete(id);
-                if (activeAlarmOrders.size === 0) stopLoopingAlarm();
-
                 if (db) {
                     db.ref('orders/' + id + '/isDeleted').set(true);
                 } else {
@@ -1122,7 +1119,8 @@
             }
             const total = document.getElementById('editTotalPrice').innerText;
 
-            silencedPickupOrders.delete(id);
+            // 如修改時間，允許重置警報提示
+            alertedOrdersSet.delete(id);
 
             const updates = {
                 note: note,
@@ -1152,7 +1150,8 @@
             renderAllViews(currentRawData);
         }
 
-        function checkKitchenPickupTimeReminders() {
+        // ⏰ 檢查廚房 10 分鐘到期警報（只在廚房頁面觸發）
+        function checkKitchen10MinAlerts() {
             if (currentRole !== 'kitchen' || !currentRawData) return;
 
             const now = new Date();
@@ -1161,31 +1160,25 @@
             Object.keys(currentRawData).forEach(k => {
                 const o = currentRawData[k];
                 if (!o || o.isDeleted || (o.timestamp && o.timestamp < startOfToday)) return;
-                
+
+                // 未煮好且有指定取餐時間
                 if ((!o.status || o.status === 'pending') && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
                     if (parts.length === 2) {
                         const targetTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), parseInt(parts[0], 10), parseInt(parts[1], 10));
                         const diffMinutes = (targetTime.getTime() - now.getTime()) / (1000 * 60);
 
+                        // 進入 10 分鐘倒數
                         if (diffMinutes <= 10 && diffMinutes >= -30) {
-                            if (!silencedPickupOrders.has(k)) {
-                                activeAlarmOrders.add(k);
+                            if (!alertedOrdersSet.has(k)) {
+                                alertedOrdersSet.add(k);
+                                playAlertSound();
+                                showKitchenBanner(`⏰ 單號 #${o.seqNo} 距離取餐時間剩餘不足 10 分鐘！`, "#d32f2f", 3000);
                             }
-                        } else {
-                            activeAlarmOrders.delete(k);
                         }
                     }
-                } else {
-                    activeAlarmOrders.delete(k);
                 }
             });
-
-            if (activeAlarmOrders.size > 0 && currentRole === 'kitchen') {
-                startLoopingAlarm();
-            } else {
-                stopLoopingAlarm();
-            }
         }
 
         if (db) {
@@ -1232,15 +1225,6 @@
                     return !o.isDeleted && inRange;
                 });
 
-            const pendingKitchenOrders = todayActiveOrders.filter(o => o.status === 'pending');
-            if (currentRole === 'kitchen') {
-                if (lastOrderCountKitchen !== -1 && pendingKitchenOrders.length > lastOrderCountKitchen) {
-                    playNewOrderSound();
-                    showKitchenBanner("🔔 廚房收到新訂單！", "#ff9800", 1500);
-                }
-            }
-            lastOrderCountKitchen = pendingKitchenOrders.length;
-
             function kitchenOrderSort(a, b) {
                 const isKitchenDoneA = (a.status !== 'pending'); 
                 const isKitchenDoneB = (b.status !== 'pending');
@@ -1281,6 +1265,7 @@
                     btnHtml = `<button class="status-btn btn-done active-state" onclick="updateKitchenStatus('${o.id}', 'pending')">✅ 廚房已完成 (按此重煮)</button>`;
                 }
 
+                // 判斷是否距離取餐不足 10 分鐘，顯示閃爍紅框提示
                 let isUrgent = false;
                 if (!isKitchenDone && o.pickupTime) {
                     const parts = o.pickupTime.split(':');
@@ -1289,11 +1274,6 @@
                         const diffMinutes = (targetTime.getTime() - now.getTime()) / (1000 * 60);
                         if (diffMinutes <= 10 && diffMinutes >= -30) isUrgent = true;
                     }
-                }
-
-                let silenceBtnHtml = '';
-                if (isUrgent && !silencedPickupOrders.has(o.id)) {
-                    silenceBtnHtml = `<button class="silence-btn" onclick="silenceOrderAlarm('${o.id}')">🔕 關閉提醒 (停止提示音)</button>`;
                 }
 
                 kitchenHtml += `
@@ -1309,13 +1289,12 @@
                         <div class="card-items">${itemsStr}</div>
                         ${o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間: ${o.pickupTime}</div>` : ''}
                         ${o.note ? `<div class="card-note">備註: ${o.note}</div>` : ''}
-                        ${silenceBtnHtml}
                         ${btnHtml}
                     </div>`;
             });
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<h3 style="color:#fff;width:100%;text-align:center;padding-top:30px;grid-column:1/-1;">🍳 廚房暫無訂單</h3>';
 
-            checkKitchenPickupTimeReminders();
+            checkKitchen10MinAlerts();
 
             // 2. 渲染【出餐頁面】 (狀態獨立控制)
             function passOrderSort(a, b) {
@@ -1382,7 +1361,7 @@
 
             // 3. 統計數據計算
             let totalRev = 0;
-            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
+            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
             const itemStats = {};
 
             selectedDayOrders.forEach(o => {
