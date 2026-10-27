@@ -94,7 +94,7 @@
         .category-title { font-size: 1.3rem; font-weight: 900; margin: 12px 0 8px; padding-left: 8px; border-left: 5px solid #333; }
         .cat-don { border-left-color: #e65100; color: #d84315; }
         .cat-noodle { border-left-color: #0d47a1; color: #1565c0; }
-        .cat-snack { border-left-color: #f57f17; color: #f57f17; }
+        .cat-snack { border-left-color: #e65100; color: #e65100; }
         .cat-drink-set { border-left-color: #1b5e20; color: #2e7d32; }
         .cat-drink-single { border-left-color: #00838f; color: #006064; }
         .cat-other { border-left-color: #6a1b9a; color: #4a148c; }
@@ -118,11 +118,13 @@
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        .item-snack { background: #fff9c4; color: #f57f17; border-color: #fff176; }
+        /* ✨ 小食按鈕樣式：鮮橙黃高對比配色 */
+        .item-snack { background: #ffe0b2; color: #e65100; border-color: #ffb74d; }
+
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
         
-        /* ✨ 優化「其他」類別按鈕顏色：高對比淡紫灰底 + 深紫色字 */
+        /* 「其他」類別按鈕顏色：高對比淡紫灰底 + 深紫色字 */
         .item-other { background: #ede7f6; color: #4527a0; border-color: #d1c4e9; }
 
         /* 🥤 汽水包裝精準配色按鈕 */
@@ -248,7 +250,7 @@
         .card-item.cat-item-drink { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .card-item.cat-item-don { background-color: #fff3e0; color: #bf360c; }
         .card-item.cat-item-pasta { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
-        .card-item.cat-item-snack { background-color: #fffde7; color: #f57f17; }
+        .card-item.cat-item-snack { background-color: #ffe0b2; color: #e65100; border: 1px solid #ffb74d; }
         .card-item.cat-item-other { background-color: #f3e5f5; color: #4a148c; border: 1px solid #e1bee7; }
 
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
@@ -412,6 +414,7 @@
                 <div class="item-card item-cream" onclick="addToCart('忌廉(跟餐)', 3, '跟餐飲品')">忌廉 $3</div>
             </div>
 
+            <!-- 小食類：更新為醒目鮮橙黃配色 -->
             <div class="category-title cat-snack">小食</div>
             <div class="grid">
                 <div class="item-card item-snack" onclick="addToCart('煎餃', 20, '小食')">煎餃 $20</div>
@@ -419,7 +422,7 @@
                 <div class="item-card item-snack" onclick="addToCart('4翼', 20, '小食')">4翼 $20</div>
             </div>
 
-            <!-- 其他類：新增「泡菜$6」，配色改為清晰淡紫灰 -->
+            <!-- 其他類：淡紫灰配色 -->
             <div class="category-title cat-other">其他</div>
             <div class="grid">
                 <div class="item-card item-other" onclick="addToCart('加蛋($4)', 4, '其他')">加蛋 $4</div>
