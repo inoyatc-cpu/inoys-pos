@@ -97,7 +97,7 @@
         .cat-snack { border-left-color: #f57f17; color: #f57f17; }
         .cat-drink-set { border-left-color: #1b5e20; color: #2e7d32; }
         .cat-drink-single { border-left-color: #00838f; color: #006064; }
-        .cat-other { border-left-color: #616161; color: #424242; }
+        .cat-other { border-left-color: #6a1b9a; color: #4a148c; }
 
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
         
@@ -116,12 +116,14 @@
 
         /* 意粉按鈕樣式 (茄字紅、蒜字白) */
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
-        .item-pasta-white { background: #ffffff; color: #333333; border-color: #b0bec5; }
+        .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
         .item-snack { background: #fff9c4; color: #f57f17; border-color: #fff176; }
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
-        .item-other { background: #e0e0e0; color: #333; border-color: #bdbdbd; }
+        
+        /* ✨ 優化「其他」類別按鈕顏色：高對比淡紫灰底 + 深紫色字 */
+        .item-other { background: #ede7f6; color: #4527a0; border-color: #d1c4e9; }
 
         /* 🥤 汽水包裝精準配色按鈕 */
         .item-coke { 
@@ -247,7 +249,7 @@
         .card-item.cat-item-don { background-color: #fff3e0; color: #bf360c; }
         .card-item.cat-item-pasta { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
         .card-item.cat-item-snack { background-color: #fffde7; color: #f57f17; }
-        .card-item.cat-item-other { background-color: #f5f5f5; color: #424242; }
+        .card-item.cat-item-other { background-color: #f3e5f5; color: #4a148c; border: 1px solid #e1bee7; }
 
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
         .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 6px; font-weight: 900; font-size: 1.2rem; color: #c62828; margin-bottom: 6px; }
@@ -385,14 +387,16 @@
                 <div class="item-card item-don-brown" onclick="addToCart('哩翼', 42, '丼飯')">哩翼 $42</div>
             </div>
 
-            <!-- 意粉類 -->
+            <!-- 意粉類：第一行茄類，第二行蒜類 -->
             <div class="category-title cat-noodle">意粉</div>
             <div class="grid">
+                <!-- 第一行 茄類 (紅色) -->
                 <div class="item-card item-pasta-red" onclick="addToCart('茄意', 26, '意粉')">茄意 $26</div>
-                <div class="item-card item-pasta-white" onclick="addToCart('蒜意', 26, '意粉')">蒜意 $26</div>
                 <div class="item-card item-pasta-red" onclick="addToCart('茄腸', 30, '意粉')">茄腸 $30</div>
-                <div class="item-card item-pasta-white" onclick="addToCart('蒜腸', 30, '意粉')">蒜腸 $30</div>
                 <div class="item-card item-pasta-red" onclick="addToCart('茄全', 38, '意粉')">茄全 $38</div>
+                <!-- 第二行 蒜類 (白色) -->
+                <div class="item-card item-pasta-white" onclick="addToCart('蒜意', 26, '意粉')">蒜意 $26</div>
+                <div class="item-card item-pasta-white" onclick="addToCart('蒜腸', 30, '意粉')">蒜腸 $30</div>
                 <div class="item-card item-pasta-white" onclick="addToCart('蒜全', 38, '意粉')">蒜全 $38</div>
             </div>
 
@@ -415,10 +419,12 @@
                 <div class="item-card item-snack" onclick="addToCart('4翼', 20, '小食')">4翼 $20</div>
             </div>
 
+            <!-- 其他類：新增「泡菜$6」，配色改為清晰淡紫灰 -->
             <div class="category-title cat-other">其他</div>
             <div class="grid">
                 <div class="item-card item-other" onclick="addToCart('加蛋($4)', 4, '其他')">加蛋 $4</div>
                 <div class="item-card item-other" onclick="addToCart('加腸', 6, '其他')">加腸 $6</div>
+                <div class="item-card item-other" onclick="addToCart('泡菜', 6, '其他')">泡菜 $6</div>
                 <div class="item-card item-other" onclick="addToCart('保馬', 2, '其他')">保馬 $2</div>
                 <div class="item-card item-other" onclick="addToCart('差價', 1, '其他')">差價 $1</div>
             </div>
@@ -638,10 +644,10 @@
             { name: '哩鳥', price: 42, category: '丼飯' },
             { name: '哩翼', price: 42, category: '丼飯' },
             { name: '茄意', price: 26, category: '意粉' },
-            { name: '蒜意', price: 26, category: '意粉' },
             { name: '茄腸', price: 30, category: '意粉' },
-            { name: '蒜腸', price: 30, category: '意粉' },
             { name: '茄全', price: 38, category: '意粉' },
+            { name: '蒜意', price: 26, category: '意粉' },
+            { name: '蒜腸', price: 30, category: '意粉' },
             { name: '蒜全', price: 38, category: '意粉' },
             { name: '泰奶(跟餐)', price: 0, category: '跟餐飲品' }, 
             { name: '冬檸(跟餐)', price: 0, category: '跟餐飲品' }, 
@@ -656,6 +662,7 @@
             { name: '4翼', price: 20, category: '小食' },
             { name: '加蛋($4)', price: 4, category: '其他' }, 
             { name: '加腸', price: 6, category: '其他' }, 
+            { name: '泡菜', price: 6, category: '其他' }, 
             { name: '保馬', price: 2, category: '其他' }, 
             { name: '差價', price: 1, category: '其他' },
             { name: '泰奶', price: 5, category: '飲品' },
