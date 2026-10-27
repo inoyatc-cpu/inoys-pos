@@ -109,13 +109,19 @@
         }
         .item-card:active { transform: scale(0.95); opacity: 0.8; }
 
-        .item-don { background: #ffe0b2; color: #bf360c; border-color: #ffb74d; }
-        .item-noodle { background: #bbdefb; color: #0d47a1; border-color: #64b5f6; }
+        /* 丼飯按鈕樣式 (第一行藍、第二行紅、第三行啡) */
+        .item-don-blue { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
+        .item-don-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        .item-don-brown { background: #efebe9; color: #4e342e; border-color: #bcaaa4; }
+
+        /* 意粉按鈕樣式 (茄字紅、蒜字白) */
+        .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        .item-pasta-white { background: #ffffff; color: #333333; border-color: #b0bec5; }
+
         .item-snack { background: #fff9c4; color: #f57f17; border-color: #fff176; }
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
         .item-other { background: #e0e0e0; color: #333; border-color: #bdbdbd; }
-        .item-card.special-item { background: #c5cae9; color: #1a237e; border-color: #7986cb; }
 
         /* 🥤 汽水包裝精準配色按鈕 */
         .item-coke { 
@@ -130,12 +136,10 @@
             background: #008A44; color: #ffffff; border: 3px solid #FFD100; 
             text-shadow: 0 1px 2px rgba(0,0,0,0.4);
         }
-        /* 芬達：橙色背景 + 芬達藍字 + 芬達藍邊框 */
         .item-fanta { 
             background: #FF6600; color: #002F6C; border: 3px solid #002F6C; 
             text-shadow: 0 1px 1px rgba(255,255,255,0.4);
         }
-        /* 忌廉：忌廉黃背景 + 忌廉綠字 + 黃框 */
         .item-cream { 
             background: #FFF176; color: #006B3F; border: 3px solid #FBC02D; 
             text-shadow: none;
@@ -215,6 +219,22 @@
             100% { box-shadow: 0 0 20px #d32f2f; }
         }
 
+        /* 👴 出餐專用字體加大加粗（老人家專用） */
+        #passOrders .card-header { font-size: 1.5rem; font-weight: 900; }
+        #passOrders .card-item { font-size: 1.4rem; font-weight: 900; padding: 8px 10px; margin-bottom: 8px; }
+        #passOrders .card-total-row { font-size: 1.5rem; font-weight: 900; }
+        #passOrders .card-pickup-time { font-size: 1.3rem; font-weight: 900; padding: 10px; }
+        #passOrders .card-note { font-size: 1.4rem; font-weight: 900; padding: 10px; }
+        #passOrders .status-btn { font-size: 1.5rem; font-weight: 900; padding: 16px; }
+        #passOrders .action-btn { font-size: 1.1rem; padding: 8px 12px; }
+
+        /* 廚房預設字體也適度加大確保清晰 */
+        #kitchenOrders .card-header { font-size: 1.3rem; }
+        #kitchenOrders .card-item { font-size: 1.25rem; font-weight: 800; }
+        #kitchenOrders .card-pickup-time { font-size: 1.15rem; font-weight: 800; }
+        #kitchenOrders .card-note { font-size: 1.2rem; font-weight: 800; }
+        #kitchenOrders .status-btn { font-size: 1.3rem; font-weight: 900; padding: 14px; }
+
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; border-bottom: 2px solid #eee; padding-bottom: 4px; }
         .card-actions { display: flex; gap: 6px; margin: 6px 0; justify-content: flex-end; }
         .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 5px 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #222; }
@@ -225,14 +245,22 @@
         
         .card-item.cat-item-drink { background-color: #e8f5e9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .card-item.cat-item-don { background-color: #fff3e0; color: #bf360c; }
-        .card-item.cat-item-noodle { background-color: #e3f2fd; color: #0d47a1; }
+        .card-item.cat-item-pasta { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
         .card-item.cat-item-snack { background-color: #fffde7; color: #f57f17; }
         .card-item.cat-item-other { background-color: #f5f5f5; color: #424242; }
 
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
         .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 4px; font-weight: 900; font-size: 1.2rem; color: #c62828; margin-bottom: 6px; }
-        .card-note { background: #fffde7; padding: 6px 8px; border-radius: 6px; color: #c62828; font-size: 1rem; font-weight: bold; margin-bottom: 8px; border: 1px solid #fff59d; word-break: break-all; }
-        .card-pickup-time { background: #e3f2fd; color: #0d47a1; padding: 6px 8px; border-radius: 6px; font-weight: bold; font-size: 1.05rem; margin-bottom: 8px; border: 1px solid #90caf9; }
+        
+        /* 💡 鮮色標示備註與取餐時間（極醒目螢光黃底紅字） */
+        .card-note { 
+            background: #ffff00 !important; color: #d32f2f !important; padding: 8px 10px; 
+            border-radius: 6px; font-weight: 900; margin-bottom: 8px; border: 2px solid #ff9800; word-break: break-all; 
+        }
+        .card-pickup-time { 
+            background: #ffff00 !important; color: #0d47a1 !important; padding: 8px 10px; 
+            border-radius: 6px; font-weight: 900; margin-bottom: 8px; border: 2px solid #64b5f6; 
+        }
         
         .status-btn { width: 100%; padding: 12px 6px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.15rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
@@ -344,17 +372,28 @@
         <div class="menu-container">
             <div class="category-title cat-don">丼飯</div>
             <div class="grid">
-                <div class="item-card item-don" onclick="addToCart('鳥丼', 40, '丼飯')">鳥丼 $40</div>
-                <div class="item-card item-don" onclick="addToCart('豚丼', 40, '丼飯')">豚丼 $40</div>
-                <div class="item-card item-don" onclick="addToCart('泡豚', 40, '丼飯')">泡豚 $40</div>
+                <!-- 第一行 藍色 -->
+                <div class="item-card item-don-blue" onclick="addToCart('豚丼', 40, '丼飯')">豚丼 $40</div>
+                <div class="item-card item-don-blue" onclick="addToCart('鳥丼', 40, '丼飯')">鳥丼 $40</div>
+                <div class="item-card item-don-blue" onclick="addToCart('翼丼', 40, '丼飯')">翼丼 $40</div>
+                <!-- 第二行 紅色 -->
+                <div class="item-card item-don-red" onclick="addToCart('泡豚', 42, '丼飯')">泡豚 $42</div>
+                <div class="item-card item-don-red" onclick="addToCart('泡鳥', 42, '丼飯')">泡鳥 $42</div>
+                <div class="item-card item-don-red" onclick="addToCart('泡翼', 42, '丼飯')">泡翼 $42</div>
+                <!-- 第三行 啡色 -->
+                <div class="item-card item-don-brown" onclick="addToCart('哩鳥', 42, '丼飯')">哩鳥 $42</div>
+                <div class="item-card item-don-brown" onclick="addToCart('哩翼', 42, '丼飯')">哩翼 $42</div>
             </div>
 
-            <div class="category-title cat-noodle">冷麵</div>
+            <!-- 新增意粉類 (排於丼飯之後) -->
+            <div class="category-title cat-noodle">意粉</div>
             <div class="grid">
-                <div class="item-card item-noodle" onclick="addToCart('A(螺)', 28, '冷麵')">A(螺) $28</div>
-                <div class="item-card item-noodle" onclick="addToCart('B(腸)', 28, '冷麵')">B(腸) $28</div>
-                <div class="item-card item-noodle" onclick="addToCart('C(翼)', 35, '冷麵')">C(翼) $35</div>
-                <div class="item-card special-item" onclick="addToCart('C(餃)', 35, '冷麵')">C(餃) $35</div>
+                <div class="item-card item-pasta-red" onclick="addToCart('茄意', 26, '意粉')">茄意 $26</div>
+                <div class="item-card item-pasta-white" onclick="addToCart('蒜意', 26, '意粉')">蒜意 $26</div>
+                <div class="item-card item-pasta-red" onclick="addToCart('茄腸', 30, '意粉')">茄腸 $30</div>
+                <div class="item-card item-pasta-white" onclick="addToCart('蒜腸', 30, '意粉')">蒜腸 $30</div>
+                <div class="item-card item-pasta-red" onclick="addToCart('茄全', 38, '意粉')">茄全 $38</div>
+                <div class="item-card item-pasta-white" onclick="addToCart('蒜全', 38, '意粉')">蒜全 $38</div>
             </div>
 
             <div class="category-title cat-drink-set">跟餐飲品</div>
@@ -373,6 +412,7 @@
             <div class="grid">
                 <div class="item-card item-snack" onclick="addToCart('煎餃', 20, '小食')">煎餃 $20</div>
                 <div class="item-card item-snack" onclick="addToCart('雞翼', 5, '小食')">雞翼 $5</div>
+                <div class="item-card item-snack" onclick="addToCart('4翼', 20, '小食')">4翼 $20</div>
             </div>
 
             <div class="category-title cat-other">其他</div>
@@ -589,13 +629,20 @@
         
         // 📌 菜單標準順序與分類表
         const ALL_MENU_ITEMS = [
-            { name: '鳥丼', price: 40, category: '丼飯' }, 
             { name: '豚丼', price: 40, category: '丼飯' }, 
-            { name: '泡豚', price: 40, category: '丼飯' },
-            { name: 'A(螺)', price: 28, category: '冷麵' }, 
-            { name: 'B(腸)', price: 28, category: '冷麵' }, 
-            { name: 'C(翼)', price: 35, category: '冷麵' }, 
-            { name: 'C(餃)', price: 35, category: '冷麵' },
+            { name: '鳥丼', price: 40, category: '丼飯' }, 
+            { name: '翼丼', price: 40, category: '丼飯' },
+            { name: '泡豚', price: 42, category: '丼飯' }, 
+            { name: '泡鳥', price: 42, category: '丼飯' }, 
+            { name: '泡翼', price: 42, category: '丼飯' },
+            { name: '哩鳥', price: 42, category: '丼飯' },
+            { name: '哩翼', price: 42, category: '丼飯' },
+            { name: '茄意', price: 26, category: '意粉' },
+            { name: '蒜意', price: 26, category: '意粉' },
+            { name: '茄腸', price: 30, category: '意粉' },
+            { name: '蒜腸', price: 30, category: '意粉' },
+            { name: '茄全', price: 38, category: '意粉' },
+            { name: '蒜全', price: 38, category: '意粉' },
             { name: '泰奶(跟餐)', price: 0, category: '跟餐飲品' }, 
             { name: '冬檸(跟餐)', price: 0, category: '跟餐飲品' }, 
             { name: '烏龍(跟餐)', price: 0, category: '跟餐飲品' },
@@ -606,6 +653,7 @@
             { name: '忌廉(跟餐)', price: 3, category: '跟餐飲品' },
             { name: '煎餃', price: 20, category: '小食' }, 
             { name: '雞翼', price: 5, category: '小食' },
+            { name: '4翼', price: 20, category: '小食' },
             { name: '加蛋($4)', price: 4, category: '其他' }, 
             { name: '加腸', price: 6, category: '其他' }, 
             { name: '保馬', price: 2, category: '其他' }, 
@@ -627,7 +675,7 @@
             '跟餐飲品': 'cat-item-drink',
             '飲品': 'cat-item-drink',
             '丼飯': 'cat-item-don',
-            '冷麵': 'cat-item-noodle',
+            '意粉': 'cat-item-pasta',
             '小食': 'cat-item-snack',
             '其他': 'cat-item-other'
         };
@@ -1378,7 +1426,7 @@
 
             // 3. 統計數據計算
             let totalRev = 0;
-            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '冷麵': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
+            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '意粉': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '其他': { qty: 0, rev: 0 } };
             const itemStats = {};
 
             selectedDayOrders.forEach(o => {
