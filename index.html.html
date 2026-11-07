@@ -146,41 +146,46 @@
         }
         .time-picker-trigger:active { background: #bbdefb; }
 
-        /* 🎡 彈出式滾輪遮罩與視窗 */
+        /* 🎡 彈出式 3D 慣性滾輪 Modal */
         .picker-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.6); z-index: 9500; display: none;
             justify-content: center; align-items: center; padding: 15px;
         }
         .picker-modal-card {
-            background: white; border-radius: 16px; width: 100%; max-width: 340px;
-            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
+            background: #f7f7f8; border-radius: 20px; width: 100%; max-width: 340px;
+            padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: center;
         }
         .wheels-wrapper {
-            display: flex; justify-content: center; align-items: center; gap: 12px; margin: 15px 0;
+            display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0;
+            position: relative; perspective: 1000px;
         }
         .wheel-container {
-            position: relative; height: 140px; width: 100px;
-            background: #f9f9f9; border-radius: 8px; border: 2px solid #1976d2;
+            position: relative; height: 200px; width: 110px;
+            background: #ffffff; border-radius: 12px;
             overflow: hidden; text-align: center; touch-action: none;
+            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
         }
         .wheel-list {
             position: absolute; width: 100%; padding: 0; margin: 0; list-style: none;
-            transition: transform 0.15s ease-out;
+            top: 80px; /* 中點 offset (200/2 - 40/2) */
+            transform-style: preserve-3d;
         }
         .wheel-item {
-            height: 44px; line-height: 44px; font-size: 1.4rem; font-weight: bold; color: #666;
-            cursor: pointer; user-select: none;
+            height: 40px; line-height: 40px; font-size: 1.3rem; font-weight: 600; color: #888;
+            cursor: pointer; user-select: none; transition: transform 0.1s, opacity 0.1s, color 0.1s;
+            backface-visibility: hidden;
         }
         .wheel-item.selected {
-            color: #d84315; font-size: 1.6rem;
+            color: #000; font-size: 1.6rem; font-weight: 900;
         }
+        /* iOS 玻璃感中框高亮條 */
         .wheel-highlight-mask {
-            position: absolute; top: 48px; left: 0; width: 100%; height: 44px;
-            border-top: 2px solid #ff9800; border-bottom: 2px solid #ff9800;
-            background: rgba(255, 152, 0, 0.12); pointer-events: none;
+            position: absolute; top: 80px; left: 0; width: 100%; height: 40px;
+            border-top: 1px solid rgba(0,0,0,0.15); border-bottom: 1px solid rgba(0,0,0,0.15);
+            background: rgba(0, 0, 0, 0.04); pointer-events: none;
         }
-        .wheel-label { font-size: 1rem; color: #0d47a1; font-weight: bold; margin-top: 4px; }
+        .wheel-label { font-size: 1rem; color: #0d47a1; font-weight: bold; margin-top: 6px; }
 
         .submit-btn { 
             width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
@@ -419,7 +424,7 @@
         </div>
     </div>
 
-    <!-- 🎡 彈出式雙滾輪選擇視窗 (Modal) -->
+    <!-- 🎡 彈出式 iOS 3D 慣性滾輪 Modal -->
     <div id="timePickerModal" class="picker-modal-overlay">
         <div class="picker-modal-card">
             <h3 style="margin-top:0; color:#0d47a1; font-size:1.3rem;">⏰ 選擇取餐時間</h3>
@@ -432,7 +437,7 @@
                     </div>
                     <div class="wheel-label">小時</div>
                 </div>
-                <span style="font-size:2rem; font-weight:bold; color:#1976d2; margin-top:-20px;">:</span>
+                <span style="font-size:2.2rem; font-weight:bold; color:#1976d2; margin-top:-20px;">:</span>
                 <!-- 右輪：分鐘 -->
                 <div>
                     <div class="wheel-container" id="minWheel">
@@ -442,7 +447,7 @@
                     <div class="wheel-label">分鐘</div>
                 </div>
             </div>
-            <button onclick="confirmTimeSelection()" style="width:100%; background:#1976d2; color:white; border:none; padding:12px; font-size:1.2rem; font-weight:bold; border-radius:8px; cursor:pointer; margin-top:10px;">確定</button>
+            <button onclick="confirmTimeSelection()" style="width:100%; background:#1976d2; color:white; border:none; padding:12px; font-size:1.2rem; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:10px;">確定</button>
         </div>
     </div>
 
@@ -662,20 +667,20 @@
             }
         }
 
-        /* 開啟彈出式滾輪視窗 */
+        /* 開啟彈出式 iOS 滾輪視窗 */
         function openTimePickerModal(target) {
             activePickerTarget = target;
             const h = (target === 'main') ? currentHour : editHour;
             const m = (target === 'main') ? currentMin : editMin;
 
-            buildWheel('hourList', 0, 23, h, (val) => {
+            initIOSWheel('hourList', 0, 23, 1, h, (val) => {
                 if (activePickerTarget === 'main') currentHour = val;
                 else editHour = val;
             });
-            buildWheel('minList', 0, 55, m, (val) => {
+            initIOSWheel('minList', 0, 55, 5, m, (val) => {
                 if (activePickerTarget === 'main') currentMin = val;
                 else editMin = val;
-            }, 5);
+            });
 
             document.getElementById('timePickerModal').style.display = 'flex';
         }
@@ -685,95 +690,176 @@
             document.getElementById('timePickerModal').style.display = 'none';
         }
 
-        /* 建立滾輪互動邏輯（強制阻止網頁捲動） */
-        function buildWheel(listId, min, max, initialVal, onSelect, step = 1) {
+        /* 🚀 核心：iOS 原生手感物理慣性與 3D 滾輪算法 */
+        function initIOSWheel(listId, min, max, step, initialVal, onSelect) {
             const listEl = document.getElementById(listId);
-            let html = `<li class="wheel-item" style="height:44px;"></li><li class="wheel-item" style="height:44px;"></li>`;
+            const container = listEl.parentElement;
+            
+            let html = '';
+            const itemsCount = Math.floor((max - min) / step) + 1;
             for (let i = min; i <= max; i += step) {
                 html += `<li class="wheel-item" data-val="${i}">${String(i).padStart(2, '0')}</li>`;
             }
-            html += `<li class="wheel-item" style="height:44px;"></li><li class="wheel-item" style="height:44px;"></li>`;
             listEl.innerHTML = html;
 
-            let currentIndex = Math.round((initialVal - min) / step);
-            const itemHeight = 44;
-            
-            function updatePosition(animate = true) {
-                if (animate) listEl.style.transition = 'transform 0.15s ease-out';
-                else listEl.style.transition = 'none';
-                listEl.style.transform = `translateY(${-currentIndex * itemHeight}px)`;
+            const itemHeight = 40;
+            const minPos = 0;
+            const maxPos = (itemsCount - 1) * itemHeight;
 
+            let currentY = -((initialVal - min) / step) * itemHeight;
+            let startY = 0;
+            let lastY = 0;
+            let velocity = 0;
+            let lastTime = Date.now();
+            let isDragging = false;
+            let animId = null;
+
+            function update3DEffect() {
                 const items = listEl.querySelectorAll('.wheel-item');
-                items.forEach((it, idx) => {
-                    if (idx === currentIndex + 2) it.classList.add('selected');
-                    else it.classList.remove('selected');
+                const centerOffset = -currentY;
+                
+                items.forEach((item, index) => {
+                    const itemPos = index * itemHeight;
+                    const diff = itemPos - centerOffset; // 距離中央高度
+                    const rotateX = Math.max(-60, Math.min(60, (diff / itemHeight) * -22)); // 3D 傾斜角度
+                    const opacity = Math.max(0.2, 1 - Math.abs(diff) / (itemHeight * 3.5)); // 漸隱效果
+                    const scale = Math.max(0.8, 1 - Math.abs(diff) / (itemHeight * 10)); // 縮放效果
+
+                    item.style.transform = `rotateX(${rotateX}deg) scale(${scale})`;
+                    item.style.opacity = opacity;
+
+                    if (Math.abs(diff) < itemHeight / 2) {
+                        item.classList.add('selected');
+                        onSelect(min + index * step);
+                    } else {
+                        item.classList.remove('selected');
+                    }
                 });
-                onSelect(min + currentIndex * step);
+
+                listEl.style.transform = `translateY(${currentY}px)`;
             }
 
-            updatePosition(false);
+            function snapToNearest() {
+                const index = Math.round(-currentY / itemHeight);
+                const targetY = -Math.max(0, Math.min(itemsCount - 1, index)) * itemHeight;
 
-            let startY = 0, isDragging = false;
-            const container = listEl.parentElement;
+                cancelAnimationFrame(animId);
+                const startTime = Date.now();
+                const duration = 200; // 200ms 吸附對齊
+                const startYPos = currentY;
 
-            // 清理舊事件防重複繫結
-            container.onmousedown = null;
-            container.onwheel = null;
+                function animateSnap() {
+                    const elapsed = Date.now() - startTime;
+                    const progress = Math.min(1, elapsed / duration);
+                    // easeOutCubic
+                    const ease = 1 - Math.pow(1 - progress, 3);
+                    currentY = startYPos + (targetY - startYPos) * ease;
+                    update3DEffect();
 
-            container.onmousedown = (e) => {
+                    if (progress < 1) {
+                        animId = requestAnimationFrame(animateSnap);
+                    }
+                }
+                animId = requestAnimationFrame(animateSnap);
+            }
+
+            function inertiaDeceleration() {
+                cancelAnimationFrame(animId);
+                
+                function stepInertia() {
+                    velocity *= 0.94; // 阻尼減速
+                    currentY += velocity;
+
+                    // 邊界回彈限制
+                    if (currentY > minPos) {
+                        currentY = minPos;
+                        velocity = 0;
+                    } else if (currentY < -maxPos) {
+                        currentY = -maxPos;
+                        velocity = 0;
+                    }
+
+                    update3DEffect();
+
+                    if (Math.abs(velocity) > 0.5) {
+                        animId = requestAnimationFrame(stepInertia);
+                    } else {
+                        snapToNearest();
+                    }
+                }
+                animId = requestAnimationFrame(stepInertia);
+            }
+
+            // 觸控與滑鼠 Event
+            function onStart(y) {
                 isDragging = true;
-                startY = e.clientY;
-                e.preventDefault();
-            };
-            
-            window.onmousemove = (e) => {
+                startY = y;
+                lastY = y;
+                velocity = 0;
+                lastTime = Date.now();
+                cancelAnimationFrame(animId);
+            }
+
+            function onMove(y) {
                 if (!isDragging) return;
-                const diff = e.clientY - startY;
-                if (Math.abs(diff) > 18) {
-                    if (diff > 0 && currentIndex > 0) currentIndex--;
-                    if (diff < 0 && currentIndex < (max - min) / step) currentIndex++;
-                    startY = e.clientY;
-                    updatePosition(true);
-                }
-            };
-            
-            window.onmouseup = () => { isDragging = false; };
+                const now = Date.now();
+                const deltaY = y - lastY;
+                const deltaTime = now - lastTime || 16;
 
-            // 使用 passive: false 徹底阻止手機版滾輪帶動網頁上下滑動
-            const touchMoveHandler = (e) => {
+                velocity = (deltaY / deltaTime) * 16; // 計算拋滑速度
+                currentY += deltaY;
+
+                // 越界阻尼感
+                if (currentY > minPos) currentY = minPos + (currentY - minPos) * 0.3;
+                if (currentY < -maxPos) currentY = -maxPos + (currentY + maxPos) * 0.3;
+
+                lastY = y;
+                lastTime = now;
+                update3DEffect();
+            }
+
+            function onEnd() {
+                if (!isDragging) return;
+                isDragging = false;
+                if (Math.abs(velocity) > 2) {
+                    inertiaDeceleration();
+                } else {
+                    snapToNearest();
+                }
+            }
+
+            // Touch
+            container.ontouchstart = (e) => onStart(e.touches[0].clientY);
+            container.ontouchmove = (e) => {
                 e.preventDefault();
-                const diff = e.touches[0].clientY - startY;
-                if (Math.abs(diff) > 15) {
-                    if (diff > 0 && currentIndex > 0) currentIndex--;
-                    if (diff < 0 && currentIndex < (max - min) / step) currentIndex++;
-                    startY = e.touches[0].clientY;
-                    updatePosition(true);
-                }
+                onMove(e.touches[0].clientY);
             };
+            container.ontouchend = onEnd;
 
-            container.ontouchstart = (e) => {
-                startY = e.touches[0].clientY;
-            };
+            // Mouse
+            container.onmousedown = (e) => { e.preventDefault(); onStart(e.clientY); };
+            window.onmousemove = (e) => { if (isDragging) onMove(e.clientY); };
+            window.onmouseup = () => { if (isDragging) onEnd(); };
 
-            container.removeEventListener('touchmove', container._touchMoveListener);
-            container._touchMoveListener = touchMoveHandler;
-            container.addEventListener('touchmove', touchMoveHandler, { passive: false });
-
+            // Wheel (鍵盤與滑鼠輪盤)
             container.onwheel = (e) => {
                 e.preventDefault();
-                if (e.deltaY > 0 && currentIndex < (max - min) / step) currentIndex++;
-                else if (e.deltaY < 0 && currentIndex > 0) currentIndex--;
-                updatePosition(true);
+                currentY -= e.deltaY > 0 ? itemHeight : -itemHeight;
+                currentY = Math.max(-maxPos, Math.min(minPos, currentY));
+                snapToNearest();
             };
 
+            // 點擊直接選擇
             listEl.onclick = (e) => {
-                const li = e.target.closest('.wheel-item');
-                if (li && li.dataset.val !== undefined) {
-                    const val = parseInt(li.dataset.val, 10);
-                    currentIndex = (val - min) / step;
-                    updatePosition(true);
+                const item = e.target.closest('.wheel-item');
+                if (item && item.dataset.val !== undefined) {
+                    const val = parseInt(item.dataset.val, 10);
+                    currentY = -((val - min) / step) * itemHeight;
+                    snapToNearest();
                 }
             };
+
+            update3DEffect();
         }
 
         function getTodayYMD(ts) {
