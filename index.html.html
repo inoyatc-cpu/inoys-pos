@@ -3,10 +3,12 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Inoya POS 三機/三部門實時同步系統</title>
+    <title>井家 Inoya POS 系統</title>
     <!-- 載入 Firebase SDK -->
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+    <!-- 載入 html2canvas (用於將明細單據截圖下載為 PNG 圖片) -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         * { box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; touch-action: manipulation; }
         
@@ -234,30 +236,24 @@
         .card-item { display: flex; justify-content: space-between; font-size: 1.35rem; font-weight: 800; margin-bottom: 5px; padding: 6px 8px; border-radius: 8px; border: 2px solid transparent; }
         
         /* 🎨 廚房/出餐卡片餐點項目：1:1 精確還原前台按鈕配色 */
-        /* 丼飯類 */
         .card-item.item-don-blue { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
         .card-item.item-don-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .card-item.item-don-brown { background: #d7ccc8; color: #4e342e; border-color: #bcaaa4; }
 
-        /* 意粉類 */
         .card-item.item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .card-item.item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        /* 小食類 - 深濃棕紅/啡色 */
         .card-item.item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
 
-        /* 飲品類 */
         .card-item.item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .card-item.item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
 
-        /* 汽水精準配色 */
         .card-item.item-coke { background: #E61C24; color: #ffffff; border-color: #b71c1c; }
         .card-item.item-zero { background: #1E1E1E; color: #ffffff; border-color: #E61C24; }
         .card-item.item-sprite { background: #008A44; color: #ffffff; border: 2px solid #FFD100; }
         .card-item.item-fanta { background: #FF6600; color: #002F6C; border: 2px solid #002F6C; }
         .card-item.item-cream { background: #FFF176; color: #006B3F; border: 2px solid #FBC02D; }
 
-        /* 其他類 */
         .card-item.item-other { background: #ede7f6; color: #4527a0; border-color: #d1c4e9; }
 
         .card-price-tag { color: #d32f2f; font-weight: bold; margin-left: 6px; }
@@ -281,15 +277,22 @@
         .btn-ready { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
         .btn-ready.active-state { background: #e65100; box-shadow: 0 3px 6px rgba(230,81,0,0.3); }
 
-        /* === 3. 明細頁面 (截圖專用單據) === */
+        /* === 3. 明細頁面 (客人單據 / 截圖下載專用) === */
         .receipt-picker-bar {
             padding: 12px; background: white; border-bottom: 2px solid #009688;
-            display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap;
+            display: flex; gap: 10px; align-items: center; justify-content: center; flex-wrap: wrap;
         }
         .receipt-select {
             padding: 10px 14px; font-size: 1.1rem; border: 2px solid #009688; border-radius: 8px;
             font-weight: bold; background: #f0fdf4; outline: none; max-width: 100%;
         }
+        .download-btn {
+            background: #00897b; color: white; border: none; padding: 10px 18px;
+            font-size: 1.1rem; font-weight: bold; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 3px 8px rgba(0,137,123,0.4); display: flex; align-items: center; gap: 6px;
+        }
+        .download-btn:active { background: #004d40; }
+
         .receipt-container {
             display: flex; justify-content: center; padding: 20px 10px; width: 100%;
         }
@@ -454,7 +457,7 @@
                 <div class="item-card item-cream" onclick="addToCart('忌廉(跟餐)', 3, '跟餐飲品')">忌廉 $3</div>
             </div>
 
-            <!-- 小食類：醒目鮮橙黃配色 -->
+            <!-- 小食類：深濃棕紅/啡色高對比配色 (非黃色) -->
             <div class="category-title cat-snack">小食</div>
             <div class="grid">
                 <div class="item-card item-snack" onclick="addToCart('煎餃', 20, '小食')">煎餃 $20</div>
@@ -532,13 +535,14 @@
         <div class="kds-container" id="passOrders" style="padding-top:15px;"></div>
     </div>
 
-    <!-- 4. 明細頁面 (客人單據 / 截圖專用) -->
+    <!-- 4. 明細頁面 (客人單據 / 截圖下載專用) -->
     <div id="detail" class="page">
         <div class="receipt-picker-bar">
             <label style="font-weight:bold; color:#004d40;">🧾 選擇訂單查看明細：</label>
             <select id="receiptOrderSelect" class="receipt-select" onchange="renderSelectedReceipt()">
                 <option value="">-- 請選擇單號 --</option>
             </select>
+            <button class="download-btn" onclick="downloadReceiptAsPNG()">📸 下載單據圖片 (PNG)</button>
         </div>
 
         <div class="receipt-container">
@@ -1680,6 +1684,35 @@
                     <span style="font-size:0.8rem; color:#aaa;">Inoya POS Synchronized Receipt System</span>
                 </div>
             `;
+        }
+
+        // 📸 將明細單據自動下載為 PNG 圖片
+        function downloadReceiptAsPNG() {
+            const card = document.getElementById('receiptCardBox');
+            const select = document.getElementById('receiptOrderSelect');
+            const orderId = select.value;
+            
+            if (!orderId || !currentRawData[orderId]) {
+                alert('請先選擇要下載圖片的訂單！');
+                return;
+            }
+
+            const seqNo = currentRawData[orderId].seqNo || '000';
+
+            // 使用 html2canvas 自動截圖下載
+            html2canvas(card, {
+                scale: 2, // 2x 清晰度，方便圖片傳送及觀看
+                backgroundColor: null,
+                useCORS: true
+            }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `井家_單號#${seqNo}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            }).catch(err => {
+                console.error("生成單據圖片失敗:", err);
+                alert("圖片下載失敗，請嘗試手動截圖。");
+            });
         }
     </script>
 </body>
