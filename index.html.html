@@ -45,7 +45,7 @@
         /* 頂部導航列 */
         .navbar { 
             position: sticky; top: 0; z-index: 1000;
-            background: #111; color: white; display: flex; justify-content: space-around; align-items: center; 
+            background: #111; color: white; display: flex; justify-space-around; align-items: center; 
             padding: 4px 6px; min-height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); width: 100%;
         }
         .nav-btn { 
@@ -139,7 +139,7 @@
         .note-tag:active { background: #ff9800; color: white; }
 
         .time-picker-box { display: flex; gap: 10px; align-items: center; margin: 10px 0; background: #e3f2fd; padding: 10px; border-radius: 8px; border: 1px solid #90caf9; }
-        .time-select { padding: 8px; font-size: 1.1rem; font-weight: bold; border-radius: 6px; border: 1px solid #1976d2; }
+        .time-select { padding: 8px; font-size: 1.05rem; font-weight: bold; border-radius: 6px; border: 1px solid #1976d2; }
 
         .submit-btn { 
             width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
@@ -220,9 +220,7 @@
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
         }
         .receipt-header { text-align: center; border-bottom: 2px dashed #bbb; padding-bottom: 12px; margin-bottom: 12px; }
-        .receipt-header svg { width: 90px; height: 90px; }
-        .receipt-header h2 { margin: 6px 0 0 0; font-size: 1.8rem; color: #d84315; font-family: 'Times New Roman', serif; }
-        .receipt-header p.sub-title { margin: 2px 0 0 0; font-size: 0.9rem; color: #d84315; letter-spacing: 2px; font-weight: bold; }
+        .receipt-header img.inoya-logo { width: 130px; height: auto; display: block; margin: 0 auto; }
         
         .receipt-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
         .receipt-sub-row { font-size: 1rem; color: #555; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
@@ -356,9 +354,9 @@
                 <button class="note-tag" onclick="addNoteToSelected('走洋蔥')">+ 走洋蔥</button>
             </div>
 
-            <!-- ⏰ 5分鐘輪盤選單 -->
+            <!-- ⏰ 預設空白，可選填取餐時間 -->
             <div class="time-picker-box">
-                <span style="font-weight:bold;">⏰ 取餐時間：</span>
+                <span style="font-weight:bold;">⏰ 取餐時間 (選填)：</span>
                 <select id="pickupHour" class="time-select"></select> 時
                 <select id="pickupMin" class="time-select"></select> 分
             </div>
@@ -402,16 +400,8 @@
             <!-- 井家專屬標誌圖片與明細卡片 -->
             <div id="receiptPaper" class="receipt-paper">
                 <div class="receipt-header">
-                    <!-- SVG 向量繪製井家經典圓形 LOGO -->
-                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
-                        <circle cx="100" cy="100" r="90" fill="none" stroke="#D84315" stroke-width="8"/>
-                        <line x1="20" y1="95" x2="180" y2="95" stroke="#D84315" stroke-width="6"/>
-                        <line x1="26" y1="118" x2="174" y2="118" stroke="#D84315" stroke-width="6"/>
-                        <path d="M 70 87 L 70 178 M 70 87 C 65 125, 55 145, 40 170" fill="none" stroke="#D84315" stroke-width="6" stroke-linecap="round"/>
-                        <line x1="120" y1="87" x2="120" y2="178" stroke="#D84315" stroke-width="6"/>
-                    </svg>
-                    <h2>井 家</h2>
-                    <p class="sub-title">INOYA</p>
+                    <!-- 嵌入井家專屬官方 LOGO 原圖 -->
+                    <img class="inoya-logo" src="LOGO_2.jpg" alt="井家 INOYA" crossOrigin="anonymous">
                 </div>
                 <div id="receiptContent">
                     <p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>
@@ -485,7 +475,7 @@
             <input type="hidden" id="editOrderId">
             
             <div style="margin: 10px 0;">
-                <label style="font-weight:bold;">⏰ 修改取餐時間：</label>
+                <label style="font-weight:bold;">⏰ 修改取餐時間 (選填)：</label>
                 <div style="display:flex; gap:6px; margin-top:4px;">
                     <select id="editPickupHour" class="time-select"></select> 時
                     <select id="editPickupMin" class="time-select"></select> 分
@@ -526,7 +516,6 @@
         let historySelectedValue = null;
         let editingCart = [];
 
-        /* 📋 菜單簡寫 轉 實體餐牌全稱 對照地圖 */
         const MENU_FULL_NAMES = {
             '鳥丼': '溫泉蛋鳥丼',
             '豚丼': '溫泉蛋豚丼',
@@ -587,7 +576,9 @@
             const ehSelect = document.getElementById('editPickupHour');
             const emSelect = document.getElementById('editPickupMin');
 
-            let hOpt = '', mOpt = '';
+            let hOpt = '<option value="">--</option>';
+            let mOpt = '<option value="">--</option>';
+
             for (let i = 0; i < 24; i++) {
                 const val = String(i).padStart(2, '0');
                 hOpt += `<option value="${val}">${val}</option>`;
@@ -600,13 +591,8 @@
             hSelect.innerHTML = hOpt; ehSelect.innerHTML = hOpt;
             mSelect.innerHTML = mOpt; emSelect.innerHTML = mOpt;
 
-            const now = new Date();
-            let curH = now.getHours();
-            let curM = Math.ceil(now.getMinutes() / 5) * 5;
-            if (curM >= 60) { curM = 0; curH = (curH + 1) % 24; }
-
-            hSelect.value = String(curH).padStart(2, '0');
-            mSelect.value = String(curM).padStart(2, '0');
+            hSelect.value = "";
+            mSelect.value = "";
         }
 
         function getTodayYMD(ts) {
@@ -740,7 +726,7 @@
 
             const pH = document.getElementById('pickupHour').value;
             const pM = document.getElementById('pickupMin').value;
-            const pickupTimeStr = `${pH}:${pM}`;
+            const pickupTimeStr = (pH !== "" && pM !== "") ? `${pH}:${pM}` : "";
             const remarkStr = document.getElementById('orderRemarkInput').value.trim();
 
             const orderData = {
@@ -767,6 +753,8 @@
             cart = [];
             selectedCartIndex = -1;
             document.getElementById('orderRemarkInput').value = '';
+            document.getElementById('pickupHour').value = '';
+            document.getElementById('pickupMin').value = '';
             renderCart();
             document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
         }
@@ -798,12 +786,13 @@
             document.getElementById('editModalTitle').innerText = `✏️ 修改訂單 #${order.seqNo}`;
             document.getElementById('editOrderRemarkInput').value = order.remark || '';
 
-            if (order.pickupTime) {
+            if (order.pickupTime && order.pickupTime.includes(':')) {
                 const parts = order.pickupTime.split(':');
-                if (parts.length === 2) {
-                    document.getElementById('editPickupHour').value = parts[0];
-                    document.getElementById('editPickupMin').value = parts[1];
-                }
+                document.getElementById('editPickupHour').value = parts[0] || '';
+                document.getElementById('editPickupMin').value = parts[1] || '';
+            } else {
+                document.getElementById('editPickupHour').value = '';
+                document.getElementById('editPickupMin').value = '';
             }
 
             editingCart = JSON.parse(JSON.stringify(order.items || []));
@@ -862,12 +851,13 @@
             const total = document.getElementById('editTotalPrice').innerText;
             const pH = document.getElementById('editPickupHour').value;
             const pM = document.getElementById('editPickupMin').value;
+            const pickupTimeStr = (pH !== "" && pM !== "") ? `${pH}:${pM}` : "";
             const remark = document.getElementById('editOrderRemarkInput').value.trim();
 
             const updates = { 
                 items: editingCart, 
                 total: total,
-                pickupTime: `${pH}:${pM}`,
+                pickupTime: pickupTimeStr,
                 remark: remark
             };
 
@@ -1157,7 +1147,6 @@
             document.getElementById('statRankList').innerHTML = rankHtml || '<div style="color:#888; text-align:center; padding:10px;">該時段無銷售記錄</div>';
         }
 
-        /* 🧾 渲染明細單據（自動轉換實體餐牌菜名全寫與日期） */
         function renderReceiptDetail() {
             const key = document.getElementById('receiptSelect').value;
             const container = document.getElementById('receiptContent');
@@ -1214,7 +1203,7 @@
             if (!key) return alert('請先選擇要下載的單號！');
 
             const paper = document.getElementById('receiptPaper');
-            html2canvas(paper, { scale: 2 }).then(canvas => {
+            html2canvas(paper, { scale: 2, useCORS: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `井家_單號#${localOrders[key].seqNo}.png`;
                 link.href = canvas.toDataURL('image/png');
