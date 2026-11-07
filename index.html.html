@@ -220,7 +220,10 @@
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
         }
         .receipt-header { text-align: center; border-bottom: 2px dashed #bbb; padding-bottom: 12px; margin-bottom: 12px; }
-        .receipt-header h2 { margin: 0; font-size: 1.8rem; color: #222; }
+        .receipt-header svg { width: 90px; height: 90px; }
+        .receipt-header h2 { margin: 6px 0 0 0; font-size: 1.8rem; color: #d84315; font-family: 'Times New Roman', serif; }
+        .receipt-header p.sub-title { margin: 2px 0 0 0; font-size: 0.9rem; color: #d84315; letter-spacing: 2px; font-weight: bold; }
+        
         .receipt-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
         .receipt-sub-row { font-size: 1rem; color: #555; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
         .download-btn {
@@ -316,7 +319,7 @@
             <div class="category-title cat-other">加料 / 其他</div>
             <div class="grid">
                 <div class="item-card item-other" onclick="addModifier('雞翼', 5, 'bg-snack')">雞翼 $5</div>
-                <div class="item-card item-other" onclick="addModifier('加蛋', 5, 'bg-other')">加蛋 $5</div>
+                <div class="item-card item-other" onclick="addModifier('加蛋', 4, 'bg-other')">加蛋 $4</div>
                 <div class="item-card item-other" onclick="addModifier('加腸', 6, 'bg-other')">加腸 $6</div>
                 <div class="item-card item-other" onclick="addModifier('泡菜', 6, 'bg-other')">泡菜 $6</div>
                 <div class="item-card item-other" onclick="addModifier('保馬', 2, 'bg-other')">保馬 $2</div>
@@ -353,7 +356,7 @@
                 <button class="note-tag" onclick="addNoteToSelected('走洋蔥')">+ 走洋蔥</button>
             </div>
 
-            <!-- ⏰ 預設當前時間，5分鐘輪盤選單 -->
+            <!-- ⏰ 5分鐘輪盤選單 -->
             <div class="time-picker-box">
                 <span style="font-weight:bold;">⏰ 取餐時間：</span>
                 <select id="pickupHour" class="time-select"></select> 時
@@ -396,10 +399,19 @@
 
             <button class="download-btn" onclick="downloadReceiptImage()">📸 下載單據圖片 (PNG)</button>
 
+            <!-- 井家專屬標誌圖片與明細卡片 -->
             <div id="receiptPaper" class="receipt-paper">
                 <div class="receipt-header">
-                    <h2>井家 Inoya</h2>
-                    <p style="margin: 4px 0; color: #666; font-size: 0.95rem;">獨立外賣專門店</p>
+                    <!-- SVG 向量繪製井家經典圓形 LOGO -->
+                    <svg viewBox="0 0 200 200" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="100" r="90" fill="none" stroke="#D84315" stroke-width="8"/>
+                        <line x1="20" y1="95" x2="180" y2="95" stroke="#D84315" stroke-width="6"/>
+                        <line x1="26" y1="118" x2="174" y2="118" stroke="#D84315" stroke-width="6"/>
+                        <path d="M 70 87 L 70 178 M 70 87 C 65 125, 55 145, 40 170" fill="none" stroke="#D84315" stroke-width="6" stroke-linecap="round"/>
+                        <line x1="120" y1="87" x2="120" y2="178" stroke="#D84315" stroke-width="6"/>
+                    </svg>
+                    <h2>井 家</h2>
+                    <p class="sub-title">INOYA</p>
                 </div>
                 <div id="receiptContent">
                     <p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>
@@ -408,7 +420,7 @@
         </div>
     </div>
 
-    <!-- 5. 統計頁面 (支援歷史週/月與自訂日期) -->
+    <!-- 5. 統計頁面 -->
     <div id="stats" class="page">
         <div style="padding: 15px; max-width: 600px; margin: 0 auto;">
             <div class="stats-tab-group">
@@ -417,7 +429,6 @@
                 <button class="stats-tab-btn" id="tab-month" onclick="switchStatsMode('month')">🗓️ 月統計</button>
             </div>
 
-            <!-- 歷史週/月 下拉選擇 -->
             <div class="stats-box" id="historySelectorBox" style="display:none; background:#f3e5f5; border:1px solid #ab47bc;">
                 <label style="font-weight:bold;" id="historySelectLabel">選擇歷史區間：</label>
                 <select id="historySelect" onchange="onHistorySelectChange()" style="width:100%; padding:8px; font-size:1.05rem; border-radius:6px; margin-top:4px; border:1px solid #8e24aa; font-weight:bold;"></select>
@@ -515,6 +526,36 @@
         let historySelectedValue = null;
         let editingCart = [];
 
+        /* 📋 菜單簡寫 轉 實體餐牌全稱 對照地圖 */
+        const MENU_FULL_NAMES = {
+            '鳥丼': '溫泉蛋鳥丼',
+            '豚丼': '溫泉蛋豚丼',
+            '翼丼': '溫泉蛋翼丼',
+            '泡鳥': '泡菜鳥丼',
+            '泡豚': '泡菜豚丼',
+            '泡翼': '泡菜翼丼',
+            '哩鳥': '咖哩烏丼',
+            '哩翼': '咖哩翼丼',
+            '茄意': '茄汁意粉',
+            '蒜意': '蒜香意粉',
+            '茄腸': '茄汁意粉＋台灣腸',
+            '蒜腸': '蒜香意粉＋台灣腸',
+            '茄全': '茄汁意粉＋台灣腸＋雞翼2隻',
+            '蒜全': '蒜香意粉＋台灣腸＋雞翼2隻',
+            '煎餃': '韮菜煎餃 (5隻)',
+            '4翼': '蜜汁雞翼 (4隻)',
+            '雞翼': '蜜汁雞翼',
+            '加蛋': '溫泉蛋',
+            '加腸': '台灣腸',
+            '泡菜': '泡菜',
+            '泰奶(跟餐)': '泰式奶茶 (跟餐)',
+            '冬檸(跟餐)': '冬瓜檸檬 (跟餐)',
+            '烏龍(跟餐)': '無糖烏龍茶 (跟餐)',
+            '泰奶': '泰式奶茶',
+            '冬檸': '冬瓜檸檬',
+            '烏龍': '無糖烏龍茶'
+        };
+
         const ALL_MENU_ITEMS = [
             { name: '鳥丼', price: 40, category: '丼飯' }, { name: '豚丼', price: 40, category: '丼飯' }, { name: '翼丼', price: 40, category: '丼飯' },
             { name: '泡鳥', price: 42, category: '丼飯' }, { name: '泡豚', price: 42, category: '丼飯' }, { name: '泡翼', price: 42, category: '丼飯' },
@@ -522,7 +563,7 @@
             { name: '茄意', price: 26, category: '意粉' }, { name: '茄腸', price: 30, category: '意粉' }, { name: '茄全', price: 38, category: '意粉' },
             { name: '蒜意', price: 26, category: '意粉' }, { name: '蒜腸', price: 30, category: '意粉' }, { name: '蒜全', price: 38, category: '意粉' },
             { name: '煎餃', price: 20, category: '小食' }, { name: '4翼', price: 20, category: '小食' }, { name: '雞翼', price: 5, category: '加料/其他' },
-            { name: '加蛋', price: 5, category: '加料/其他' }, { name: '加腸', price: 6, category: '加料/其他' }, { name: '泡菜', price: 6, category: '加料/其他' },
+            { name: '加蛋', price: 4, category: '加料/其他' }, { name: '加腸', price: 6, category: '加料/其他' }, { name: '泡菜', price: 6, category: '加料/其他' },
             { name: '泰奶', price: 5, category: '飲品' }, { name: '冬檸', price: 5, category: '飲品' }, { name: '烏龍', price: 5, category: '飲品' },
             { name: '可樂', price: 6, category: '飲品' }, { name: 'Zero', price: 6, category: '飲品' }, { name: '雪碧', price: 6, category: '飲品' }
         ];
@@ -540,7 +581,6 @@
             initTimePickers();
         });
 
-        /* 初始化時間輪盤（5分鐘為單位，預設為現時進位時間） */
         function initTimePickers() {
             const hSelect = document.getElementById('pickupHour');
             const mSelect = document.getElementById('pickupMin');
@@ -569,8 +609,8 @@
             mSelect.value = String(curM).padStart(2, '0');
         }
 
-        function getTodayYMD() {
-            const now = new Date();
+        function getTodayYMD(ts) {
+            const now = ts ? new Date(ts) : new Date();
             const y = now.getFullYear();
             const m = String(now.getMonth() + 1).padStart(2, '0');
             const d = String(now.getDate()).padStart(2, '0');
@@ -580,7 +620,7 @@
         function checkPassword() {
             if (document.getElementById('accessPass').value.trim() === SYSTEM_PASSWORD) {
                 document.getElementById('authOverlay').style.display = 'none';
-                renderAllViews(localOrders); // 成功登入後立刻強制渲染畫面數據
+                renderAllViews(localOrders);
             } else {
                 document.getElementById('errorMsg').style.display = 'block';
             }
@@ -696,6 +736,7 @@
             const seq = String(currentMaxSeq).padStart(3, '0');
             const now = new Date();
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            const dateStr = getTodayYMD(now.getTime());
 
             const pH = document.getElementById('pickupHour').value;
             const pM = document.getElementById('pickupMin').value;
@@ -706,6 +747,7 @@
                 seqNo: seq,
                 items: cart,
                 total: document.getElementById('totalPrice').innerText,
+                date: dateStr,
                 time: timeStr,
                 pickupTime: pickupTimeStr,
                 remark: remarkStr,
@@ -965,7 +1007,6 @@
             renderStats();
         }
 
-        /* 📊 統計分析功能（支援歷史週/歷史月/自訂日期） */
         function switchStatsMode(range) {
             currentStatsRange = range;
             customSelectedDate = null;
@@ -1071,14 +1112,16 @@
                     count++;
 
                     (o.items || []).forEach(it => {
-                        itemCounts[it.name] = (itemCounts[it.name] || 0) + 1;
+                        const fullName = MENU_FULL_NAMES[it.name] || it.name;
+                        itemCounts[fullName] = (itemCounts[fullName] || 0) + 1;
                         const cat = it.category || '加料/其他';
                         if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
                         categoryStats[cat].qty += 1;
                         categoryStats[cat].rev += (it.price || 0);
 
                         (it.modifiers || []).forEach(m => {
-                            itemCounts[m.name] = (itemCounts[m.name] || 0) + 1;
+                            const mFullName = MENU_FULL_NAMES[m.name] || m.name;
+                            itemCounts[mFullName] = (itemCounts[mFullName] || 0) + 1;
                             const mCat = m.price === 0 ? '跟餐飲品' : '加料/其他';
                             if (!categoryStats[mCat]) categoryStats[mCat] = { qty: 0, rev: 0 };
                             categoryStats[mCat].qty += 1;
@@ -1114,6 +1157,7 @@
             document.getElementById('statRankList').innerHTML = rankHtml || '<div style="color:#888; text-align:center; padding:10px;">該時段無銷售記錄</div>';
         }
 
+        /* 🧾 渲染明細單據（自動轉換實體餐牌菜名全寫與日期） */
         function renderReceiptDetail() {
             const key = document.getElementById('receiptSelect').value;
             const container = document.getElementById('receiptContent');
@@ -1124,20 +1168,24 @@
 
             const o = localOrders[key];
             let itemsHtml = '';
+            const orderDateStr = o.date || getTodayYMD(o.timestamp);
 
             (o.items || []).forEach(it => {
                 let subTotal = it.price;
                 let subItems = '';
+                const mainFullName = MENU_FULL_NAMES[it.name] || it.name;
+
                 (it.modifiers || []).forEach(m => {
                     subTotal += m.price;
-                    subItems += `<div class="receipt-sub-row">↳ ${m.name} (+$${m.price})</div>`;
+                    const modFullName = MENU_FULL_NAMES[m.name] || m.name;
+                    subItems += `<div class="receipt-sub-row">↳ ${modFullName} (+$${m.price})</div>`;
                 });
                 if (it.notes && it.notes.length > 0) {
                     subItems += `<div class="receipt-sub-row" style="color:#d32f2f;">↳ 備註: ${it.notes.join(', ')}</div>`;
                 }
 
                 itemsHtml += `
-                    <div class="receipt-row"><span>${it.name}</span><span>$${subTotal}</span></div>
+                    <div class="receipt-row"><span>${mainFullName}</span><span>$${subTotal}</span></div>
                     ${subItems}`;
             });
 
@@ -1145,19 +1193,20 @@
                 itemsHtml += `<div class="receipt-sub-row" style="color:#c62828; margin-top:6px;">📝 全單備註: ${o.remark}</div>`;
             }
 
-            const pTime = o.pickupTime ? `<div>⏰ 取餐時間：${o.pickupTime}</div>` : '';
+            const pTime = o.pickupTime ? `<div style="font-size:1.1rem; color:#e65100;">⏰ 取餐時間：<b>${o.pickupTime}</b></div>` : '';
 
             container.innerHTML = `
-                <div style="margin-bottom: 10px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">
-                    <div>單號：#${o.seqNo}</div>
-                    <div style="font-size:0.95rem; color:#666;">落單時間：${o.time}</div>
+                <div style="margin-bottom: 12px; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #eee; padding-bottom: 8px;">
+                    <div style="font-size:1.4rem; color:#222;">單號：#${o.seqNo}</div>
+                    <div style="color:#555; margin-top:4px;">落單日期：${orderDateStr}</div>
+                    <div style="color:#555;">落單時間：${o.time}</div>
                     ${pTime}
                 </div>
-                <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">${itemsHtml}</div>
-                <div class="receipt-row" style="font-size: 1.4rem; color: #d32f2f; margin-top: 10px;">
+                <div style="border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">${itemsHtml}</div>
+                <div class="receipt-row" style="font-size: 1.5rem; color: #d32f2f; margin-top: 10px;">
                     <span>應付金額</span><span>$${o.total}</span>
                 </div>
-                <p style="text-align:center; margin-top:15px; font-size:0.9rem; color:#888;">多謝光顧！祝您用餐愉快！</p>`;
+                <p style="text-align:center; margin-top:18px; font-size:0.95rem; color:#666; font-weight:bold;">多謝光顧！祝您用餐愉快！</p>`;
         }
 
         function downloadReceiptImage() {
