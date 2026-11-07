@@ -75,4 +75,590 @@
         #pass.page { background-color: #0d1b2a; } 
         #receipt.page { background-color: #e0f2f1; }
         #stats.page { background-color: #f3e5f5; } 
-        .page.active {
+        .page.active { display: block; }
+
+        /* === 1. 前台落單 === */
+        .menu-container { padding: 10px; width: 100%; }
+        .category-title { 
+            font-size: 1.3rem; font-weight: 900; margin: 12px 0 8px; padding: 6px 8px; 
+            border-left: 5px solid #333; display: flex; justify-content: space-between; align-items: center;
+        }
+        .cat-don { border-left-color: #e65100; color: #d84315; }
+        .cat-noodle { border-left-color: #0d47a1; color: #1565c0; }
+        .cat-snack { border-left-color: #3e2723; color: #3e2723; }
+        .cat-drink-set { border-left-color: #1b5e20; color: #2e7d32; }
+        .cat-drink-single { border-left-color: #00838f; color: #006064; cursor: pointer; background: #e0f7fa; border-radius: 6px; }
+        .cat-other { border-left-color: #6a1b9a; color: #4a148c; }
+
+        .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
+        
+        .item-card { 
+            padding: 14px 2px; border-radius: 10px; text-align: center; 
+            font-size: 1.1rem; font-weight: 800; cursor: pointer; border: 2px solid #ccc;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.08); transition: transform 0.1s;
+            word-break: break-word;
+        }
+        .item-card:active { transform: scale(0.95); opacity: 0.8; }
+
+        /* 前台按鈕配色及對應類別 */
+        .item-don-blue { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
+        .item-don-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        .item-don-brown { background: #d7ccc8; color: #4e342e; border-color: #bcaaa4; }
+
+        .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+        .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
+
+        /* 小食類：深色系 (非黃底) */
+        .item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
+
+        .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
+        .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
+        .item-other { background: #ede7f6; color: #4527a0; border-color: #d1c4e9; }
+
+        /* 🥤 汽水包裝配色 */
+        .item-coke { background: #E61C24; color: #ffffff; border-color: #b71c1c; }
+        .item-zero { background: #1E1E1E; color: #ffffff; border-color: #E61C24; }
+        .item-sprite { background: #008A44; color: #ffffff; border: 3px solid #FFD100; }
+        .item-fanta { background: #FF6600; color: #002F6C; border: 3px solid #002F6C; }
+        .item-cream { background: #FFF176; color: #006B3F; border: 3px solid #FBC02D; }
+
+        /* 購物車區塊 */
+        .cart-container { 
+            background: #ffffff; margin: 15px 10px 30px 10px; padding: 14px; 
+            border: 3px solid #ff9800; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+        }
+        .cart-title { font-weight: bold; font-size: 1.25rem; margin-bottom: 10px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+        
+        /* 方案二：購物車主餐及附屬配料 (父子結構) */
+        .cart-main-item {
+            border: 2px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 8px;
+            background: #fafafa; cursor: pointer; transition: all 0.2s;
+        }
+        .cart-main-item.selected {
+            border-color: #e65100; background: #fff3e0; box-shadow: 0 0 8px rgba(230,81,0,0.3);
+        }
+        .cart-main-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; }
+        .cart-sub-list { margin-top: 6px; padding-left: 12px; border-left: 3px solid #ffb74d; }
+        .cart-sub-item { display: flex; justify-content: space-between; font-size: 1rem; color: #555; margin-top: 4px; font-weight: 700; }
+
+        .note-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
+        .note-tag { 
+            background: #f0f0f0; border: 1px solid #ccc; border-radius: 16px; 
+            padding: 6px 12px; font-size: 0.95rem; font-weight: bold; cursor: pointer; color: #333;
+        }
+        .note-tag:active { background: #ff9800; color: white; }
+
+        .time-picker-btn {
+            width: 100%; padding: 12px; font-size: 1.15rem; font-weight: bold;
+            background: #e3f2fd; color: #0d47a1; border: 2px solid #64b5f6;
+            border-radius: 8px; cursor: pointer; text-align: center; margin-bottom: 6px;
+        }
+
+        .submit-btn { 
+            width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
+            font-size: 1.4rem; font-weight: 900; border-radius: 10px; cursor: pointer;
+            box-shadow: 0 4px 10px rgba(46,125,50,0.4); margin-top: 8px;
+        }
+
+        /* === 2. 廚房 & 出餐 共用卡片 (配色 1:1 對應前台) === */
+        .kds-container { padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
+        @media (max-width: 600px) { .kds-container { grid-template-columns: 1fr; } }
+        
+        .order-card { 
+            background: white; width: 100%; border-radius: 12px; 
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 8px solid #ff9800; padding: 12px; 
+            display: flex; flex-direction: column;
+        }
+        .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
+
+        /* 廚房與出餐字體大小統一 (仿傚廚房) */
+        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+        .card-actions { display: flex; gap: 8px; margin: 8px 0; justify-content: flex-end; }
+        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 5px 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #222; }
+        .action-btn.del { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
+        .card-items { margin: 8px 0; }
+        .card-main-row { font-size: 1.35rem; font-weight: 900; padding: 6px 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; }
+        .card-sub-row { font-size: 1.1rem; font-weight: 800; padding: 4px 8px 4px 20px; color: #444; border-left: 3px solid #ff9800; margin-left: 10px; background: #fafafa; }
+
+        /* 精準 1:1 配色對應標籤 */
+        .bg-don-blue { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
+        .bg-don-red { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .bg-don-brown { background-color: #d7ccc8; color: #4e342e; border: 1px solid #bcaaa4; }
+        .bg-pasta-red { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
+        .bg-pasta-white { background-color: #ffffff; color: #222222; border: 1px solid #b0bec5; }
+        .bg-snack { background-color: #3e2723; color: #ffffff; border: 1px solid #5d4037; }
+        .bg-drink { background-color: #c8e6c9; color: #1b5e20; border: 1px solid #81c784; }
+        .bg-other { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
+        .bg-coke { background-color: #E61C24; color: #ffffff; }
+        .bg-zero { background-color: #1E1E1E; color: #ffffff; }
+        .bg-sprite { background-color: #008A44; color: #ffffff; }
+        .bg-fanta { background-color: #FF6600; color: #002F6C; }
+        .bg-cream { background-color: #FFF176; color: #006B3F; }
+
+        .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 6px; font-weight: 900; font-size: 1.35rem; color: #c62828; margin-top: 6px; }
+        .card-pickup-time { background: #ffff00 !important; color: #0d47a1 !important; padding: 8px; border-radius: 6px; font-weight: 900; margin-bottom: 6px; font-size: 1.25rem; }
+
+        .status-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.35rem; color: white; cursor: pointer; margin-top: auto; }
+        .btn-cooking { background: #ff9800; }
+        .btn-done.active-state { background: #2e7d32; }
+        .btn-ready { background: #ff9800; }
+        .btn-ready.active-state { background: #e65100; }
+
+        /* === 3. 明細截圖區塊 (電子單據) === */
+        .receipt-paper {
+            background: #ffffff; width: 100%; max-width: 420px; margin: 15px auto; padding: 20px;
+            border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
+        }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #bbb; padding-bottom: 12px; margin-bottom: 12px; }
+        .receipt-header h2 { margin: 0; font-size: 1.8rem; color: #222; }
+        .receipt-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
+        .receipt-sub-row { font-size: 0.95rem; color: #666; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
+        .download-btn {
+            width: 100%; background: #0288d1; color: white; border: none; padding: 14px;
+            font-size: 1.2rem; font-weight: 900; border-radius: 8px; cursor: pointer; margin-bottom: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 🔒 密碼驗證遮罩層 -->
+    <div id="authOverlay">
+        <div class="auth-card">
+            <h2>🔐 Inoya POS 系統</h2>
+            <p>請輸入授權密碼進入系統</p>
+            <input type="password" id="accessPass" class="auth-input" placeholder="請輸入密碼" pattern="[0-9]*" inputmode="numeric">
+            <button class="auth-btn" onclick="checkPassword()">解鎖登入</button>
+            <div id="errorMsg" class="error-msg">⚠️ 密碼錯誤！</div>
+        </div>
+    </div>
+
+    <!-- 頂部導航列 -->
+    <div class="navbar">
+        <button class="nav-btn active" id="btn-pos" onclick="switchRole('pos')">前台</button>
+        <button class="nav-btn" id="btn-kitchen" onclick="switchRole('kitchen')">廚房</button>
+        <button class="nav-btn" id="btn-pass" onclick="switchRole('pass')">出餐</button>
+        <button class="nav-btn" id="btn-receipt" onclick="switchRole('receipt')">明細</button>
+        <button class="nav-btn" id="btn-stats" onclick="switchRole('stats')">統計</button>
+        <button class="nav-btn lock-btn" onclick="lockSystem()">🔒</button>
+    </div>
+
+    <div id="modeToast">已切換模式</div>
+
+    <!-- 1. 前台落單頁面 -->
+    <div id="pos" class="page active">
+        <div class="menu-container">
+            <!-- 丼飯類 (排列: 鳥 -> 豚 -> 翼) -->
+            <div class="category-title cat-don">丼飯</div>
+            <div class="grid">
+                <div class="item-card item-don-blue" onclick="addMainItem('鳥丼', 40, '丼飯', 'bg-don-blue')">鳥丼 $40</div>
+                <div class="item-card item-don-blue" onclick="addMainItem('豚丼', 40, '丼飯', 'bg-don-blue')">豚丼 $40</div>
+                <div class="item-card item-don-blue" onclick="addMainItem('翼丼', 40, '丼飯', 'bg-don-blue')">翼丼 $40</div>
+
+                <div class="item-card item-don-red" onclick="addMainItem('泡鳥', 42, '丼飯', 'bg-don-red')">泡鳥 $42</div>
+                <div class="item-card item-don-red" onclick="addMainItem('泡豚', 42, '丼飯', 'bg-don-red')">泡豚 $42</div>
+                <div class="item-card item-don-red" onclick="addMainItem('泡翼', 42, '丼飯', 'bg-don-red')">泡翼 $42</div>
+
+                <div class="item-card item-don-brown" onclick="addMainItem('哩鳥', 42, '丼飯', 'bg-don-brown')">哩鳥 $42</div>
+                <div class="item-card item-don-brown" onclick="addMainItem('哩翼', 42, '丼飯', 'bg-don-brown')">哩翼 $42</div>
+            </div>
+
+            <!-- 意粉類 (茄類第一行，蒜類第二行) -->
+            <div class="category-title cat-noodle">意粉</div>
+            <div class="grid">
+                <div class="item-card item-pasta-red" onclick="addMainItem('茄意', 26, '意粉', 'bg-pasta-red')">茄意 $26</div>
+                <div class="item-card item-pasta-red" onclick="addMainItem('茄腸', 30, '意粉', 'bg-pasta-red')">茄腸 $30</div>
+                <div class="item-card item-pasta-red" onclick="addMainItem('茄全', 38, '意粉', 'bg-pasta-red')">茄全 $38</div>
+
+                <div class="item-card item-pasta-white" onclick="addMainItem('蒜意', 26, '意粉', 'bg-pasta-white')">蒜意 $26</div>
+                <div class="item-card item-pasta-white" onclick="addMainItem('蒜腸', 30, '意粉', 'bg-pasta-white')">蒜腸 $30</div>
+                <div class="item-card item-pasta-white" onclick="addMainItem('蒜全', 38, '意粉', 'bg-pasta-white')">蒜全 $38</div>
+            </div>
+
+            <!-- 跟餐飲品 -->
+            <div class="category-title cat-drink-set">跟餐飲品</div>
+            <div class="grid">
+                <div class="item-card item-drink" onclick="addModifier('泰奶(跟餐)', 0, 'bg-drink')">泰奶 $0</div>
+                <div class="item-card item-drink" onclick="addModifier('冬檸(跟餐)', 0, 'bg-drink')">冬檸 $0</div>
+                <div class="item-card item-drink" onclick="addModifier('烏龍(跟餐)', 0, 'bg-drink')">烏龍 $0</div>
+                <div class="item-card item-coke" onclick="addModifier('可樂(跟餐)', 3, 'bg-coke')">可樂 $3</div>
+                <div class="item-card item-zero" onclick="addModifier('Zero(跟餐)', 3, 'bg-zero')">Zero $3</div>
+                <div class="item-card item-sprite" onclick="addModifier('雪碧(跟餐)', 3, 'bg-sprite')">雪碧 $3</div>
+                <div class="item-card item-fanta" onclick="addModifier('芬達(跟餐)', 3, 'bg-fanta')">芬達 $3</div>
+                <div class="item-card item-cream" onclick="addModifier('忌廉(跟餐)', 3, 'bg-cream')">忌廉 $3</div>
+            </div>
+
+            <!-- 小食類 (深色系) -->
+            <div class="category-title cat-snack">小食</div>
+            <div class="grid">
+                <div class="item-card item-snack" onclick="addModifier('煎餃', 20, 'bg-snack')">煎餃 $20</div>
+                <div class="item-card item-snack" onclick="addModifier('雞翼', 5, 'bg-snack')">雞翼 $5</div>
+                <div class="item-card item-snack" onclick="addModifier('4翼', 20, 'bg-snack')">4翼 $20</div>
+            </div>
+
+            <!-- 其他 (含加料，點擊自動掛載於當前主餐) -->
+            <div class="category-title cat-other">加料 / 其他</div>
+            <div class="grid">
+                <div class="item-card item-other" onclick="addModifier('加蛋', 5, 'bg-other')">加蛋 $5</div>
+                <div class="item-card item-other" onclick="addModifier('加腸', 6, 'bg-other')">加腸 $6</div>
+                <div class="item-card item-other" onclick="addModifier('泡菜', 6, 'bg-other')">泡菜 $6</div>
+                <div class="item-card item-other" onclick="addModifier('保馬', 2, 'bg-other')">保馬 $2</div>
+                <div class="item-card item-other" onclick="addModifier('差價', 1, 'bg-other')">差價 $1</div>
+            </div>
+
+            <!-- 飲品 (單點) - 預設折疊 -->
+            <div class="category-title cat-drink-single" onclick="toggleDrinkSingle()">
+                <span>🥤 飲品 (單點)</span>
+                <span id="drinkAccordionIcon">▼ [點擊展開]</span>
+            </div>
+            <div class="grid" id="drinkSingleGrid" style="display: none; margin-top: 8px;">
+                <div class="item-card item-drink-single" onclick="addMainItem('泰奶', 5, '飲品', 'bg-drink')">泰奶 $5</div>
+                <div class="item-card item-drink-single" onclick="addMainItem('冬檸', 5, '飲品', 'bg-drink')">冬檸 $5</div>
+                <div class="item-card item-drink-single" onclick="addMainItem('烏龍', 5, '飲品', 'bg-drink')">烏龍 $5</div>
+                <div class="item-card item-coke" onclick="addMainItem('可樂', 6, '飲品', 'bg-coke')">可樂 $6</div>
+                <div class="item-card item-zero" onclick="addMainItem('Zero', 6, '飲品', 'bg-zero')">Zero $6</div>
+                <div class="item-card item-sprite" onclick="addMainItem('雪碧', 6, '飲品', 'bg-sprite')">雪碧 $6</div>
+                <div class="item-card item-fanta" onclick="addMainItem('芬達', 6, '飲品', 'bg-fanta')">芬達 $6</div>
+                <div class="item-card item-cream" onclick="addMainItem('忌廉', 6, '飲品', 'bg-cream')">忌廉 $6</div>
+            </div>
+        </div>
+
+        <!-- 購物車區塊 (方案二父子展示) -->
+        <div class="cart-container">
+            <div class="cart-title">🛒 已選餐點 (點擊項目可切換加料目標)</div>
+            
+            <div class="note-tags-container">
+                <button class="note-tag" onclick="addNoteToSelected('多飯')">+ 多飯</button>
+                <button class="note-tag" onclick="addNoteToSelected('少飯')">+ 少飯</button>
+                <button class="note-tag" onclick="addNoteToSelected('多汁')">+ 多汁</button>
+                <button class="note-tag" onclick="addNoteToSelected('走汁')">+ 走汁</button>
+                <button class="note-tag" onclick="addNoteToSelected('少汁')">+ 少汁</button>
+                <button class="note-tag" onclick="addNoteToSelected('走洋蔥')">+ 走洋蔥</button>
+            </div>
+
+            <div id="cartList" style="margin-bottom: 12px;">
+                <div style="color:#888; text-align:center; padding:15px;">未點選餐點</div>
+            </div>
+
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:10px;">
+                <span style="font-size:1.2rem;">流水單號: <strong id="nextSeq" style="color:#e65100;">001</strong></span>
+                <span style="font-size:1.5rem; font-weight:bold; color:#d32f2f;">總計: $<span id="totalPrice">0</span></span>
+            </div>
+            <button class="submit-btn" onclick="submitOrder()">傳送至廚房 🚀</button>
+        </div>
+    </div>
+
+    <!-- 2. 廚房製作頁面 -->
+    <div id="kitchen" class="page">
+        <div class="kds-container" id="kitchenOrders" style="padding-top:15px;"></div>
+    </div>
+
+    <!-- 3. 出餐/叫號頁面 -->
+    <div id="pass" class="page">
+        <div class="kds-container" id="passOrders" style="padding-top:15px;"></div>
+    </div>
+
+    <!-- 4. 明細與截圖頁面 -->
+    <div id="receipt" class="page">
+        <div style="padding: 15px; max-width: 450px; margin: 0 auto;">
+            <label style="font-weight: bold; font-size: 1.1rem;">選擇查看單號：</label>
+            <select id="receiptSelect" onchange="renderReceiptDetail()" style="width: 100%; padding: 12px; font-size: 1.2rem; border-radius: 8px; margin: 8px 0 15px 0;">
+                <option value="">-- 請選擇訂單 --</option>
+            </select>
+
+            <button class="download-btn" onclick="downloadReceiptImage()">📸 下載單據圖片 (PNG)</button>
+
+            <!-- 圖片產生目標區塊 -->
+            <div id="receiptPaper" class="receipt-paper">
+                <div class="receipt-header">
+                    <h2>井家 Inoya</h2>
+                    <p style="margin: 4px 0; color: #666; font-size: 0.95rem;">獨立外賣專門店</p>
+                </div>
+                <div id="receiptContent">
+                    <p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 統計頁面 -->
+    <div id="stats" class="page">
+        <div style="padding: 20px; text-align: center;">
+            <h2>📊 營業統計模式</h2>
+            <p>統計功能運作中...</p>
+        </div>
+    </div>
+
+    <script>
+        const SYSTEM_PASSWORD = "26798267";
+        let db = null;
+        let cart = []; // 結構: [{ id, name, price, bgClass, modifiers: [{name, price}], notes: [] }]
+        let selectedCartIndex = -1;
+        let localOrders = {};
+        let currentMaxSeq = 0;
+
+        // Firebase 初始化
+        const firebaseConfig = {
+            apiKey: "AIzaSyACm7A_0l5kimIxQQGKjreLNpARMq3xeMA",
+            authDomain: "inoya-pos.firebaseapp.com",
+            databaseURL: "https://inoya-pos-default-rtdb.asia-southeast1.firebasedatabase.app",
+            projectId: "inoya-pos"
+        };
+        try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){}
+
+        /* 🔐 解鎖邏輯 */
+        function checkPassword() {
+            if (document.getElementById('accessPass').value.trim() === SYSTEM_PASSWORD) {
+                document.getElementById('authOverlay').style.display = 'none';
+            } else {
+                document.getElementById('errorMsg').style.display = 'block';
+            }
+        }
+        function lockSystem() { document.getElementById('authOverlay').style.display = 'flex'; }
+
+        function switchRole(role) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(role).classList.add('active');
+            document.getElementById('btn-' + role).classList.add('active');
+        }
+
+        /* 🥤 折疊飲品單點 */
+        function toggleDrinkSingle() {
+            const grid = document.getElementById('drinkSingleGrid');
+            const icon = document.getElementById('drinkAccordionIcon');
+            if (grid.style.display === 'none') {
+                grid.style.display = 'grid';
+                icon.innerText = '▲ [點擊收起]';
+            } else {
+                grid.style.display = 'none';
+                icon.innerText = '▼ [點擊展開]';
+            }
+        }
+
+        /* 🛒 方案二購物車邏輯 */
+        function addMainItem(name, price, category, bgClass) {
+            const newItem = {
+                id: Date.now() + Math.random(),
+                name, price, category, bgClass,
+                modifiers: [],
+                notes: []
+            };
+            cart.push(newItem);
+            selectedCartIndex = cart.length - 1; // 自動選取最新加入的主餐
+            renderCart();
+        }
+
+        function addModifier(name, price, bgClass) {
+            if (cart.length === 0) return alert('請先選擇主餐（如丼飯或意粉）！');
+            if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
+                selectedCartIndex = cart.length - 1;
+            }
+            cart[selectedCartIndex].modifiers.push({ name, price, bgClass });
+            renderCart();
+        }
+
+        function addNoteToSelected(noteText) {
+            if (cart.length === 0) return alert('請先選擇主餐！');
+            if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
+                selectedCartIndex = cart.length - 1;
+            }
+            if (!cart[selectedCartIndex].notes.includes(noteText)) {
+                cart[selectedCartIndex].notes.push(noteText);
+            }
+            renderCart();
+        }
+
+        function selectCartItem(index) {
+            selectedCartIndex = index;
+            renderCart();
+        }
+
+        function removeMainItem(index, event) {
+            event.stopPropagation();
+            cart.splice(index, 1);
+            if (selectedCartIndex >= cart.length) selectedCartIndex = cart.length - 1;
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            if (cart.length === 0) {
+                list.innerHTML = '<div style="color:#888; text-align:center; padding:15px;">未點選餐點</div>';
+                document.getElementById('totalPrice').innerText = '0';
+                return;
+            }
+
+            let html = '', grandTotal = 0;
+            cart.forEach((item, idx) => {
+                let itemTotal = item.price;
+                let subHtml = '';
+                
+                item.modifiers.forEach(m => {
+                    itemTotal += m.price;
+                    subHtml += `<div class="cart-sub-item"><span>↳ ${m.name}</span><span>+$${m.price}</span></div>`;
+                });
+
+                if (item.notes.length > 0) {
+                    subHtml += `<div class="cart-sub-item" style="color:#d32f2f;"><span>↳ 備註: ${item.notes.join(', ')}</span></div>`;
+                }
+
+                grandTotal += itemTotal;
+                const isSelected = (idx === selectedCartIndex) ? 'selected' : '';
+
+                html += `
+                    <div class="cart-main-item ${isSelected}" onclick="selectCartItem(${idx})">
+                        <div class="cart-main-header">
+                            <span>${item.name}</span>
+                            <span>$${itemTotal} <b onclick="removeMainItem(${idx}, event)" style="color:red; margin-left:10px;">✕</b></span>
+                        </div>
+                        ${subHtml ? `<div class="cart-sub-list">${subHtml}</div>` : ''}
+                    </div>`;
+            });
+
+            list.innerHTML = html;
+            document.getElementById('totalPrice').innerText = grandTotal;
+        }
+
+        function submitOrder() {
+            if (cart.length === 0) return alert('購物車為空！');
+            currentMaxSeq += 1;
+            const seq = String(currentMaxSeq).padStart(3, '0');
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+
+            const orderData = {
+                seqNo: seq,
+                items: cart,
+                total: document.getElementById('totalPrice').innerText,
+                time: timeStr,
+                status: 'pending',
+                passStatus: 'pending',
+                timestamp: Date.now()
+            };
+
+            if (db) {
+                db.ref('orders/' + orderData.timestamp).set(orderData);
+            } else {
+                localOrders[orderData.timestamp] = orderData;
+                renderAllViews(localOrders);
+            }
+
+            cart = [];
+            selectedCartIndex = -1;
+            renderCart();
+            document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
+        }
+
+        /* 渲染廚房與出餐頁面 (1:1 配色) */
+        if (db) {
+            db.ref('orders').on('value', snapshot => {
+                renderAllViews(snapshot.val() || {});
+            });
+        }
+
+        function renderAllViews(data) {
+            localOrders = data;
+            let kitchenHtml = '', passHtml = '', selectOptions = '<option value="">-- 請選擇訂單 --</option>';
+
+            Object.keys(data).forEach(k => {
+                const o = data[k];
+                if (!o || o.isDeleted) return;
+
+                selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
+
+                let itemsStr = '';
+                (o.items || []).forEach(it => {
+                    itemsStr += `<div class="card-main-row ${it.bgClass}">
+                        <span>${it.name}</span>
+                    </div>`;
+                    (it.modifiers || []).forEach(m => {
+                        itemsStr += `<div class="card-sub-row">↳ ${m.name} (+$${m.price})</div>`;
+                    });
+                    if (it.notes && it.notes.length > 0) {
+                        itemsStr += `<div class="card-sub-row" style="color:#c62828;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                    }
+                });
+
+                // 廚房卡片
+                kitchenHtml += `
+                    <div class="order-card ${o.status !== 'pending' ? 'completed' : ''}">
+                        <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
+                        <div class="card-items">${itemsStr}</div>
+                        <button class="status-btn btn-cooking" onclick="db.ref('orders/${k}/status').set('${o.status === 'pending' ? 'done' : 'pending'}')">
+                            ${o.status === 'pending' ? '👨‍🍳 煮好出單' : '✅ 廚房已完成'}
+                        </button>
+                    </div>`;
+
+                // 出餐卡片
+                passHtml += `
+                    <div class="order-card ${o.passStatus === 'ready' ? 'completed' : ''}">
+                        <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
+                        <div class="card-items">${itemsStr}</div>
+                        <div class="card-total-row"><span>總計:</span><span>$${o.total}</span></div>
+                        <button class="status-btn btn-ready ${o.passStatus === 'ready' ? 'active-state' : ''}" onclick="db.ref('orders/${k}/passStatus').set('${o.passStatus === 'ready' ? 'pending' : 'ready'}')">
+                            ${o.passStatus === 'ready' ? '已出餐 ✓' : '未出餐'}
+                        </button>
+                    </div>`;
+            });
+
+            document.getElementById('kitchenOrders').innerHTML = kitchenHtml;
+            document.getElementById('passOrders').innerHTML = passHtml;
+            document.getElementById('receiptSelect').innerHTML = selectOptions;
+        }
+
+        /* 📸 明細與圖片下載功能 */
+        function renderReceiptDetail() {
+            const key = document.getElementById('receiptSelect').value;
+            const container = document.getElementById('receiptContent');
+            if (!key || !localOrders[key]) {
+                container.innerHTML = '<p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>';
+                return;
+            }
+
+            const o = localOrders[key];
+            let itemsHtml = '';
+
+            (o.items || []).forEach(it => {
+                let subTotal = it.price;
+                let subItems = '';
+                (it.modifiers || []).forEach(m => {
+                    subTotal += m.price;
+                    subItems += `<div class="receipt-sub-row">↳ ${m.name} (+$${m.price})</div>`;
+                });
+                if (it.notes && it.notes.length > 0) {
+                    subItems += `<div class="receipt-sub-row" style="color:#d32f2f;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                }
+
+                itemsHtml += `
+                    <div class="receipt-row"><span>${it.name}</span><span>$${subTotal}</span></div>
+                    ${subItems}`;
+            });
+
+            container.innerHTML = `
+                <div style="margin-bottom: 10px; font-weight: bold; font-size: 1.1rem; border-bottom: 1px solid #eee; padding-bottom: 6px;">
+                    <div>單號：#${o.seqNo}</div>
+                    <div style="font-size:0.95rem; color:#666;">時間：${o.time}</div>
+                </div>
+                <div style="border-bottom: 1px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">${itemsHtml}</div>
+                <div class="receipt-row" style="font-size: 1.4rem; color: #d32f2f; margin-top: 10px;">
+                    <span>應付金額</span><span>$${o.total}</span>
+                </div>
+                <p style="text-align:center; margin-top:15px; font-size:0.9rem; color:#888;">多謝光顧！祝您用餐愉快！</p>`;
+        }
+
+        function downloadReceiptImage() {
+            const key = document.getElementById('receiptSelect').value;
+            if (!key) return alert('請先選擇要下載的單號！');
+
+            const paper = document.getElementById('receiptPaper');
+            html2canvas(paper, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `井家_單號#${localOrders[key].seqNo}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
