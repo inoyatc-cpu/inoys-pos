@@ -220,7 +220,9 @@
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
         }
         .receipt-header { text-align: center; border-bottom: 2px dashed #bbb; padding-bottom: 12px; margin-bottom: 12px; }
-        .receipt-header img.inoya-logo { width: 130px; height: auto; display: block; margin: 0 auto; }
+        .receipt-brand-title { font-size: 2.2rem; font-weight: 900; color: #d84315; margin: 0; font-family: 'PingFang HK', 'Heiti TC', 'Microsoft JhengHei', sans-serif; letter-spacing: 2px; }
+        .receipt-brand-sub { font-size: 1.1rem; font-weight: bold; color: #d84315; margin-top: 2px; letter-spacing: 3px; }
+        .receipt-info-list { font-size: 0.85rem; color: #444; font-weight: 600; margin-top: 8px; line-height: 1.4; text-align: center; }
         
         .receipt-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
         .receipt-sub-row { font-size: 1rem; color: #555; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
@@ -397,11 +399,17 @@
 
             <button class="download-btn" onclick="downloadReceiptImage()">📸 下載單據圖片 (PNG)</button>
 
-            <!-- 井家專屬標誌圖片與明細卡片 -->
+            <!-- 井家專屬明細頁首 (純 HTML 文字，解決圖片截圖消失問題) -->
             <div id="receiptPaper" class="receipt-paper">
                 <div class="receipt-header">
-                    <!-- 使用 Base64 內嵌圖片，徹底解決 html2canvas 跨域空白問題 -->
-                    <img class="inoya-logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAAmAEgBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="井家 INOYA">
+                    <h1 class="receipt-brand-title">井 家</h1>
+                    <div class="receipt-brand-sub">INOYA</div>
+                    <div class="receipt-info-list">
+                        <div><b>營業時間：</b>11:30 - 19:45 (日至五)</div>
+                        <div><b>電話/WhatsApp：</b>5282 1668</div>
+                        <div><b>地址：</b>東涌東日街市7號鋪</div>
+                        <div><b>IG：</b>inoya_tungchung</div>
+                    </div>
                 </div>
                 <div id="receiptContent">
                     <p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>
@@ -1203,7 +1211,7 @@
             if (!key) return alert('請先選擇要下載的單號！');
 
             const paper = document.getElementById('receiptPaper');
-            html2canvas(paper, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
+            html2canvas(paper, { scale: 2 }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `井家_單號#${localOrders[key].seqNo}.png`;
                 link.href = canvas.toDataURL('image/png');
