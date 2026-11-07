@@ -100,36 +100,28 @@
         }
         .item-card:active { transform: scale(0.95); opacity: 0.8; }
 
-        /* 前台按鈕配色及對應類別 */
         .item-don-blue { background: #e3f2fd; color: #0d47a1; border-color: #90caf9; }
         .item-don-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-don-brown { background: #d7ccc8; color: #4e342e; border-color: #bcaaa4; }
-
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
-
-        /* 小食類：深色系 */
         .item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
-
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
         .item-other { background: #ede7f6; color: #4527a0; border-color: #d1c4e9; }
 
-        /* 🥤 汽水包裝配色 */
         .item-coke { background: #E61C24; color: #ffffff; border-color: #b71c1c; }
         .item-zero { background: #1E1E1E; color: #ffffff; border-color: #E61C24; }
         .item-sprite { background: #008A44; color: #ffffff; border: 3px solid #FFD100; }
         .item-fanta { background: #FF6600; color: #002F6C; border: 3px solid #002F6C; }
         .item-cream { background: #FFF176; color: #006B3F; border: 3px solid #FBC02D; }
 
-        /* 購物車區塊 */
         .cart-container { 
             background: #ffffff; margin: 15px 10px 30px 10px; padding: 14px; 
             border: 3px solid #ff9800; border-radius: 12px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
         }
         .cart-title { font-weight: bold; font-size: 1.25rem; margin-bottom: 10px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 6px; }
         
-        /* 父子結構 */
         .cart-main-item {
             border: 2px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 8px;
             background: #fafafa; cursor: pointer; transition: all 0.2s;
@@ -139,7 +131,7 @@
         }
         .cart-main-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.2rem; }
         .cart-sub-list { margin-top: 6px; padding-left: 12px; border-left: 3px solid #ffb74d; }
-        .cart-sub-item { display: flex; justify-content: space-between; font-size: 1rem; color: #555; margin-top: 4px; font-weight: 700; }
+        .cart-sub-item { display: flex; justify-content: space-between; font-size: 1.05rem; color: #333; margin-top: 4px; font-weight: 700; }
 
         .note-tags-container { display: flex; flex-wrap: wrap; gap: 6px; margin: 8px 0; }
         .note-tag { 
@@ -161,16 +153,31 @@
         .order-card { 
             background: white; width: 100%; border-radius: 12px; 
             box-shadow: 0 4px 12px rgba(0,0,0,0.15); border-top: 8px solid #ff9800; padding: 12px; 
-            display: flex; flex-direction: column;
+            display: flex; flex-direction: column; position: relative;
         }
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
+        
+        /* 已刪除卡片醒目外觀 */
+        .order-card.deleted-card { 
+            background: #f5f5f5 !important; border-top-color: #9e9e9e !important; border: 2px dashed #757575; opacity: 0.6; 
+        }
+        .deleted-badge {
+            background: #d32f2f; color: white; font-weight: 900; padding: 4px 8px; font-size: 0.9rem;
+            border-radius: 4px; display: inline-block; margin-left: 6px;
+        }
 
-        .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
+        .card-actions { display: flex; gap: 6px; }
+        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 4px 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #222; }
+        .action-btn.del { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
+
         .card-items { margin: 8px 0; }
+        
+        /* 升級：父級與子級同樣大字體 (1.35rem) */
         .card-main-row { font-size: 1.35rem; font-weight: 900; padding: 6px 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; }
-        .card-sub-row { font-size: 1.1rem; font-weight: 800; padding: 4px 8px 4px 20px; color: #444; border-left: 3px solid #ff9800; margin-left: 10px; background: #fafafa; }
+        .card-sub-row { font-size: 1.35rem; font-weight: 900; padding: 6px 8px 6px 20px; margin-top: 4px; border-radius: 6px; display: flex; justify-content: space-between; border-left: 6px solid #ff9800; }
 
-        /* 精準 1:1 配色對應標籤 */
+        /* 精準 1:1 配色標籤 */
         .bg-don-blue { background-color: #e3f2fd; color: #0d47a1; border: 1px solid #90caf9; }
         .bg-don-red { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
         .bg-don-brown { background-color: #d7ccc8; color: #4e342e; border: 1px solid #bcaaa4; }
@@ -179,6 +186,7 @@
         .bg-snack { background-color: #3e2723; color: #ffffff; border: 1px solid #5d4037; }
         .bg-drink { background-color: #c8e6c9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .bg-other { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
+        .bg-note { background-color: #ffff00; color: #c62828; border: 1px solid #ffd600; }
         .bg-coke { background-color: #E61C24; color: #ffffff; }
         .bg-zero { background-color: #1E1E1E; color: #ffffff; }
         .bg-sprite { background-color: #008A44; color: #ffffff; }
@@ -191,7 +199,7 @@
         .btn-ready { background: #ff9800; }
         .btn-ready.active-state { background: #e65100; }
 
-        /* === 3. 明細截圖區塊 === */
+        /* === 3. 明細與統計 === */
         .receipt-paper {
             background: #ffffff; width: 100%; max-width: 420px; margin: 15px auto; padding: 20px;
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
@@ -199,16 +207,21 @@
         .receipt-header { text-align: center; border-bottom: 2px dashed #bbb; padding-bottom: 12px; margin-bottom: 12px; }
         .receipt-header h2 { margin: 0; font-size: 1.8rem; color: #222; }
         .receipt-row { display: flex; justify-content: space-between; font-size: 1.1rem; margin-bottom: 6px; font-weight: 800; }
-        .receipt-sub-row { font-size: 0.95rem; color: #666; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
+        .receipt-sub-row { font-size: 1rem; color: #555; padding-left: 15px; margin-bottom: 4px; font-weight: bold; }
         .download-btn {
             width: 100%; background: #0288d1; color: white; border: none; padding: 14px;
             font-size: 1.2rem; font-weight: 900; border-radius: 8px; cursor: pointer; margin-bottom: 15px;
         }
+
+        .stats-box { background: white; border-radius: 12px; padding: 16px; margin-bottom: 15px; box-shadow: 0 3px 10px rgba(0,0,0,0.08); }
+        .stats-tab-group { display: flex; gap: 8px; margin-bottom: 15px; }
+        .stats-tab-btn { flex: 1; padding: 12px; font-size: 1.1rem; font-weight: bold; background: #e0e0e0; border: none; border-radius: 8px; cursor: pointer; }
+        .stats-tab-btn.active { background: #6a1b9a; color: white; }
     </style>
 </head>
 <body>
 
-    <!-- 🔒 密碼驗證遮罩層 -->
+    <!-- 🔒 密碼鎖定畫面 -->
     <div id="authOverlay">
         <div class="auth-card">
             <h2>🔐 Inoya POS 系統</h2>
@@ -354,7 +367,6 @@
 
             <button class="download-btn" onclick="downloadReceiptImage()">📸 下載單據圖片 (PNG)</button>
 
-            <!-- 圖片產生目標區塊 -->
             <div id="receiptPaper" class="receipt-paper">
                 <div class="receipt-header">
                     <h2>井家 Inoya</h2>
@@ -367,11 +379,35 @@
         </div>
     </div>
 
-    <!-- 5. 統計頁面 -->
+    <!-- 5. 統計頁面 (提供 日/週/月 切換) -->
     <div id="stats" class="page">
-        <div style="padding: 20px; text-align: center;">
-            <h2>📊 營業統計模式</h2>
-            <p>統計功能運作中...</p>
+        <div style="padding: 15px; max-width: 600px; margin: 0 auto;">
+            <div class="stats-tab-group">
+                <button class="stats-tab-btn active" id="tab-day" onclick="switchStatsMode('day')">📅 今日數據</button>
+                <button class="stats-tab-btn" id="tab-week" onclick="switchStatsMode('week')">📆 本週數據</button>
+                <button class="stats-tab-btn" id="tab-month" onclick="switchStatsMode('month')">🗓️ 本月數據</button>
+            </div>
+
+            <div class="stats-box">
+                <h3 style="margin-top:0; color:#333; border-bottom:2px solid #6a1b9a; padding-bottom:8px;" id="statsTitle">📊 營業概況 (今日)</h3>
+                <div style="display:flex; justify-content:space-around; text-align:center; margin:15px 0;">
+                    <div>
+                        <div style="font-size:0.95rem; color:#666;">總營業額</div>
+                        <div style="font-size:1.8rem; font-weight:900; color:#2e7d32;" id="statRevenue">$0</div>
+                    </div>
+                    <div>
+                        <div style="font-size:0.95rem; color:#666;">有效單數</div>
+                        <div style="font-size:1.8rem; font-weight:900; color:#0d47a1;" id="statCount">0 單</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="stats-box">
+                <h3 style="margin-top:0; color:#333; border-bottom:2px solid #6a1b9a; padding-bottom:8px;">🏆 熱銷項目排行榜</h3>
+                <div id="statRankList" style="margin-top:10px;">
+                    <div style="color:#888; text-align:center; padding:10px;">暫無數據</div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -382,6 +418,7 @@
         let selectedCartIndex = -1;
         let localOrders = {};
         let currentMaxSeq = 0;
+        let currentStatsRange = 'day';
 
         const firebaseConfig = {
             apiKey: "AIzaSyACm7A_0l5kimIxQQGKjreLNpARMq3xeMA",
@@ -405,6 +442,7 @@
             document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
             document.getElementById(role).classList.add('active');
             document.getElementById('btn-' + role).classList.add('active');
+            if (role === 'stats') renderStats();
         }
 
         function toggleDrinkSingle() {
@@ -516,6 +554,7 @@
                 time: timeStr,
                 status: 'pending',
                 passStatus: 'pending',
+                isDeleted: false, // 預設未刪除
                 timestamp: Date.now()
             };
 
@@ -532,7 +571,17 @@
             document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
         }
 
-        /* 取得今日開始的時間戳 (00:00:00) */
+        function markOrderDeleted(id, seqNo) {
+            if (confirm(`⚠️ 確定要刪除單號 #${seqNo} 嗎？\n刪除後該單號不會重用，並會在畫面上留底標示為【已刪除】。`)) {
+                if (db) {
+                    db.ref('orders/' + id + '/isDeleted').set(true);
+                } else {
+                    if (localOrders[id]) localOrders[id].isDeleted = true;
+                    renderAllViews(localOrders);
+                }
+            }
+        }
+
         function getTodayStartTimestamp() {
             const now = new Date();
             return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
@@ -549,15 +598,31 @@
             let kitchenHtml = '', passHtml = '', selectOptions = '<option value="">-- 請選擇訂單 --</option>';
             const todayStart = getTodayStartTimestamp();
 
-            /* 💡 自動過濾掉非今日建立的訂單 */
-            const orderKeys = Object.keys(data).filter(k => {
+            // 計算最大單號（包含已刪除單號，確保單號絕對不重複使用）
+            let maxSeqToday = 0;
+            Object.keys(data).forEach(k => {
                 const o = data[k];
-                return o && !o.isDeleted && (o.timestamp ? o.timestamp >= todayStart : true);
+                if (o && o.timestamp && o.timestamp >= todayStart && o.seqNo) {
+                    const num = parseInt(o.seqNo, 10);
+                    if (!isNaN(num) && num > maxSeqToday) maxSeqToday = num;
+                }
+            });
+            currentMaxSeq = maxSeqToday;
+            document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
+
+            // 取得今日全部訂單 (包含已刪除)
+            const todayKeys = Object.keys(data).filter(k => {
+                const o = data[k];
+                return o && (o.timestamp ? o.timestamp >= todayStart : true);
             });
 
-            orderKeys.forEach(k => {
+            todayKeys.forEach(k => {
                 const o = data[k];
-                selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
+                const isDel = o.isDeleted === true;
+
+                if (!isDel) {
+                    selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
+                }
 
                 let itemsStr = '';
                 (o.items || []).forEach(it => {
@@ -565,36 +630,118 @@
                         <span>${it.name}</span>
                     </div>`;
                     (it.modifiers || []).forEach(m => {
-                        itemsStr += `<div class="card-sub-row">↳ ${m.name} (+$${m.price})</div>`;
+                        itemsStr += `<div class="card-sub-row ${m.bgClass || 'bg-other'}">
+                            <span>↳ ${m.name}</span><span>+$${m.price}</span>
+                        </div>`;
                     });
                     if (it.notes && it.notes.length > 0) {
-                        itemsStr += `<div class="card-sub-row" style="color:#c62828;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                        itemsStr += `<div class="card-sub-row bg-note">
+                            <span>↳ 備註: ${it.notes.join(', ')}</span>
+                        </div>`;
                     }
                 });
 
+                // 廚房卡片
                 kitchenHtml += `
-                    <div class="order-card ${o.status !== 'pending' ? 'completed' : ''}">
-                        <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
+                    <div class="order-card ${isDel ? 'deleted-card' : (o.status !== 'pending' ? 'completed' : '')}">
+                        <div class="card-header">
+                            <span>#${o.seqNo} ${isDel ? '<span class="deleted-badge">已刪除</span>' : ''}</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.1rem; color:#666;">${o.time}</span>
+                                ${!isDel ? `<div class="card-actions"><button class="action-btn del" onclick="markOrderDeleted('${k}', '${o.seqNo}')">🗑️ 刪除</button></div>` : ''}
+                            </div>
+                        </div>
                         <div class="card-items">${itemsStr}</div>
-                        <button class="status-btn btn-cooking" onclick="db.ref('orders/${k}/status').set('${o.status === 'pending' ? 'done' : 'pending'}')">
-                            ${o.status === 'pending' ? '👨‍🍳 煮好出單' : '✅ 廚房已完成'}
-                        </button>
+                        ${!isDel ? `
+                            <button class="status-btn btn-cooking" onclick="db.ref('orders/${k}/status').set('${o.status === 'pending' ? 'done' : 'pending'}')">
+                                ${o.status === 'pending' ? '👨‍🍳 煮好出單' : '✅ 廚房已完成'}
+                            </button>
+                        ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
                     </div>`;
 
+                // 出餐卡片
                 passHtml += `
-                    <div class="order-card ${o.passStatus === 'ready' ? 'completed' : ''}">
-                        <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
+                    <div class="order-card ${isDel ? 'deleted-card' : (o.passStatus === 'ready' ? 'completed' : '')}">
+                        <div class="card-header">
+                            <span>#${o.seqNo} ${isDel ? '<span class="deleted-badge">已刪除</span>' : ''}</span>
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <span style="font-size:1.1rem; color:#666;">${o.time}</span>
+                                ${!isDel ? `<div class="card-actions"><button class="action-btn del" onclick="markOrderDeleted('${k}', '${o.seqNo}')">🗑️ 刪除</button></div>` : ''}
+                            </div>
+                        </div>
                         <div class="card-items">${itemsStr}</div>
                         <div class="card-total-row"><span>總計:</span><span>$${o.total}</span></div>
-                        <button class="status-btn btn-ready ${o.passStatus === 'ready' ? 'active-state' : ''}" onclick="db.ref('orders/${k}/passStatus').set('${o.passStatus === 'ready' ? 'pending' : 'ready'}')">
-                            ${o.passStatus === 'ready' ? '已出餐 ✓' : '未出餐'}
-                        </button>
+                        ${!isDel ? `
+                            <button class="status-btn btn-ready ${o.passStatus === 'ready' ? 'active-state' : ''}" onclick="db.ref('orders/${k}/passStatus').set('${o.passStatus === 'ready' ? 'pending' : 'ready'}')">
+                                ${o.passStatus === 'ready' ? '已出餐 ✓' : '未出餐'}
+                            </button>
+                        ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
                     </div>`;
             });
 
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">🍳 今日暫無訂單</div>';
             document.getElementById('passOrders').innerHTML = passHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">📢 今日暫無出餐訂單</div>';
             document.getElementById('receiptSelect').innerHTML = selectOptions;
+
+            renderStats();
+        }
+
+        /* 📊 統計模式計算與渲染 (支援 日/週/月) */
+        function switchStatsMode(range) {
+            currentStatsRange = range;
+            document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + range).classList.add('active');
+            renderStats();
+        }
+
+        function renderStats() {
+            if (!localOrders) return;
+            const now = new Date();
+            let startTime = 0;
+
+            if (currentStatsRange === 'day') {
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+                document.getElementById('statsTitle').innerText = '📊 營業概況 (今日)';
+            } else if (currentStatsRange === 'week') {
+                const day = now.getDay() || 7; // 週一為開始
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1, 0, 0, 0).getTime();
+                document.getElementById('statsTitle').innerText = '📊 營業概況 (本週)';
+            } else if (currentStatsRange === 'month') {
+                startTime = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).getTime();
+                document.getElementById('statsTitle').innerText = '📊 營業概況 (本月)';
+            }
+
+            let totalRev = 0, count = 0;
+            const itemCounts = {};
+
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && !o.isDeleted && o.timestamp && o.timestamp >= startTime) {
+                    totalRev += parseFloat(o.total || 0);
+                    count++;
+
+                    (o.items || []).forEach(it => {
+                        itemCounts[it.name] = (itemCounts[it.name] || 0) + 1;
+                        (it.modifiers || []).forEach(m => {
+                            itemCounts[m.name] = (itemCounts[m.name] || 0) + 1;
+                        });
+                    });
+                }
+            });
+
+            document.getElementById('statRevenue').innerText = `$${totalRev}`;
+            document.getElementById('statCount').innerText = `${count} 單`;
+
+            const sortedItems = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
+            let rankHtml = '';
+            sortedItems.forEach((name, idx) => {
+                rankHtml += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; font-weight:bold; font-size:1.1rem;">
+                        <span>${idx + 1}. ${name}</span>
+                        <span style="color:#6a1b9a;">${itemCounts[name]} 份</span>
+                    </div>`;
+            });
+            document.getElementById('statRankList').innerHTML = rankHtml || '<div style="color:#888; text-align:center; padding:10px;">該時段無銷售記錄</div>';
         }
 
         function renderReceiptDetail() {
@@ -616,7 +763,7 @@
                     subItems += `<div class="receipt-sub-row">↳ ${m.name} (+$${m.price})</div>`;
                 });
                 if (it.notes && it.notes.length > 0) {
-                    subItems += `<div class="receipt-sub-row" style="color:#c62828;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                    subItems += `<div class="receipt-sub-row" style="color:#d32f2f;">↳ 備註: ${it.notes.join(', ')}</div>`;
                 }
 
                 itemsHtml += `
