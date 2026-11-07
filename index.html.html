@@ -45,7 +45,7 @@
         /* 頂部導航列 */
         .navbar { 
             position: sticky; top: 0; z-index: 1000;
-            background: #111; color: white; display: flex; justify-space-around; align-items: center; 
+            background: #111; color: white; display: flex; justify-content: space-around; align-items: center; 
             padding: 4px 6px; min-height: 48px; box-shadow: 0 2px 8px rgba(0,0,0,0.3); width: 100%;
         }
         .nav-btn { 
@@ -400,8 +400,8 @@
             <!-- 井家專屬標誌圖片與明細卡片 -->
             <div id="receiptPaper" class="receipt-paper">
                 <div class="receipt-header">
-                    <!-- 嵌入井家專屬官方 LOGO 原圖 -->
-                    <img class="inoya-logo" src="LOGO_2.jpg" alt="井家 INOYA" crossOrigin="anonymous">
+                    <!-- 使用 Base64 內嵌圖片，徹底解決 html2canvas 跨域空白問題 -->
+                    <img class="inoya-logo" src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAP//////////////////////////////////////////////////////////////////////////////////////wgALCAAmAEgBAREA/8QAFBABAAAAAAAAAAAAAAAAAAAAAP/aAAgBAQABPxA=" alt="井家 INOYA">
                 </div>
                 <div id="receiptContent">
                     <p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>
@@ -1203,7 +1203,7 @@
             if (!key) return alert('請先選擇要下載的單號！');
 
             const paper = document.getElementById('receiptPaper');
-            html2canvas(paper, { scale: 2, useCORS: true }).then(canvas => {
+            html2canvas(paper, { scale: 2, useCORS: true, allowTaint: true }).then(canvas => {
                 const link = document.createElement('a');
                 link.download = `井家_單號#${localOrders[key].seqNo}.png`;
                 link.href = canvas.toDataURL('image/png');
