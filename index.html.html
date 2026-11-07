@@ -772,11 +772,49 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             const todayStr = getTodayYMD();
-            document.getElementById('customDatePicker').value = todayStr;
+            const datePicker = document.getElementById('customDatePicker');
+            if(datePicker) datePicker.value = todayStr;
+            
             initTimeWheels('cartPickupHour', 'cartPickupMin');
             initTimeWheels('editPickupHour', 'editPickupMin');
             resetPickupTimeToNow('cartPickupHour', 'cartPickupMin');
+
+            const accessPassInput = document.getElementById('accessPass');
+            if (accessPassInput) {
+                accessPassInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') checkPassword();
+                });
+            }
+
+            if (safeGetStorage('isAuthorized') === 'true') {
+                document.getElementById('authOverlay').style.display = 'none';
+            } else {
+                document.getElementById('authOverlay').style.display = 'flex';
+            }
         });
+
+        /* 🔐 修正後的解鎖邏輯 */
+        function checkPassword() {
+            const inputPass = document.getElementById('accessPass').value.trim();
+            const errorMsg = document.getElementById('errorMsg');
+            if (inputPass === SYSTEM_PASSWORD) {
+                document.getElementById('authOverlay').style.display = 'none';
+                safeSetStorage('isAuthorized', 'true');
+                errorMsg.style.display = 'none';
+                document.getElementById('accessPass').value = '';
+            } else {
+                errorMsg.style.display = 'block';
+                document.getElementById('accessPass').value = '';
+            }
+        }
+
+        function lockSystem() {
+            try { localStorage.removeItem('isAuthorized'); } catch(e){}
+            document.getElementById('authOverlay').style.display = 'flex';
+        }
+
+        function safeSetStorage(key, value) { try { localStorage.setItem(key, value); } catch(e){} }
+        function safeGetStorage(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
 
         /* ⏰ 時間輪盤初始化（5分鐘進位） */
         function initTimeWheels(hourElemId, minElemId) {
@@ -804,8 +842,10 @@
             if (m >= 60) m = 55;
             const mStr = String(m).padStart(2, '0');
 
-            document.getElementById(hourElemId).value = h;
-            document.getElementById(minElemId).value = mStr;
+            const hEl = document.getElementById(hourElemId);
+            const mEl = document.getElementById(minElemId);
+            if (hEl) hEl.value = h;
+            if (mEl) mEl.value = mStr;
         }
 
         function getTodayYMD() {
@@ -816,183 +856,570 @@
             return `${y}-${m}-${d}`;
         }
 
-        /* 🔐 解鎖邏輯 */
-        function checkPassword() {
-            const inputPass = document.getElementById('accessPass').value.trim();
-            const errorMsg = document.getElementById('errorMsg');
-            if (inputPass === SYSTEM_PASSWORD) {
-                document.getElementById('authOverlay').style.display = 'none';
-                safeSetStorage('isAuthorized', 'true');
-                errorMsg.style.display = 'none';
-                document.getElementById('accessPass').value = '';
-            } else {
-                errorMsg.style.display = 'block';
-                document.getElementById('accessPass').value = '';
-            }
-        }
-
-        function lockSystem() {
-            try { localStorage.removeItem('isAuthorized'); } catch(e){}
-            document.getElementById('authOverlay').style.display = 'flex';
-        }
-
-        /* 🛞 雙輪滾輪邏輯初始化 */
-        function initTimeWheels() {
-            const hWheel = document.getElementById('hourWheel');
-            const mWheel = document.getElementById('minuteWheel');
-
-            let hHtml = '<div class="wheel-item" style="height:65px;"></div>';
-            for (let h = 0; h < 24; h++) {
-                const val = String(h).padStart(2, '0');
-                hHtml += `<div class="wheel-item" data-val="${val}">${val}</div>`;
-            }
-            hHtml += '<div class="wheel-item" style="height:65px;"></div>';
-            hWheel.innerHTML = hHtml;
-
-            let mHtml = '<div class="wheel-item" style="height:65px;"></div>';
-            for (let m = 0; m < 60; m += 5) {
-                const val = String(m).padStart(2, '0');
-                mHtml += `<div class="wheel-item" data-val="${val}">${val}</div>`;
-            }
-            mHtml += '<div class="wheel-item" style="height:65px;"></div>';
-            mWheel.innerHTML = mHtml;
-        }
-
-        function openTimePickerModal(target) {
-            activePickerTarget = target;
-            const modal = document.getElementById('timePickerModal');
-            modal.style.display = 'flex';
-
-            let currentVal = '';
-            if (target === 'pos') {
-                currentVal = document.getElementById('selectedPickupTime').value;
-            } else {
-                currentVal = document.getElementById('editSelectedPickupTime').value;
-            }
-
-            let targetH = '', targetM = '';
-
-            if (currentVal && currentVal.length === 4) {
-                targetH = currentVal.substring(0, 2);
-                targetM = currentVal.substring(2, 4);
-            } else {
-                const now = new Date();
-                let h = now.getHours();
-                let m = Math.round(now.getMinutes() / 5) * 5;
-                if (m >= 60) {
-                    m = 0;
-                    h = (h + 1) % 24;
-                }
-                targetH = String(h).padStart(2, '0');
-                targetM = String(m).padStart(2, '0');
-            }
-
-            setTimeout(() => {
-                scrollWheelToValue('hourWheel', targetH);
-                scrollWheelToValue('minuteWheel', targetM);
-            }, 50);
-        }
-
-        function scrollWheelToValue(wheelId, val) {
-            const wheel = document.getElementById(wheelId);
-            const items = wheel.querySelectorAll('.wheel-item[data-val]');
-            items.forEach((item, idx) => {
-                if (item.getAttribute('data-val') === val) {
-                    wheel.scrollTop = idx * 50;
-                }
-            });
-            highlightWheelSelected(wheelId);
-        }
-
-        function onWheelScroll(wheelId) {
-            highlightWheelSelected(wheelId);
-        }
-
-        function highlightWheelSelected(wheelId) {
-            const wheel = document.getElementById(wheelId);
-            const items = wheel.querySelectorAll('.wheel-item[data-val]');
-            const index = Math.round(wheel.scrollTop / 50);
-            
-            items.forEach((item, idx) => {
-                if (idx === index) item.classList.add('selected');
-                else item.classList.remove('selected');
-            });
-        }
-
-        function getWheelSelectedValue(wheelId) {
-            const wheel = document.getElementById(wheelId);
-            const items = wheel.querySelectorAll('.wheel-item[data-val]');
-            const index = Math.round(wheel.scrollTop / 50);
-            if (items[index]) {
-                return items[index].getAttribute('data-val');
-            }
-            return '00';
-        }
-
-        function confirmPickerTime() {
-            const h = getWheelSelectedValue('hourWheel');
-            const m = getWheelSelectedValue('minuteWheel');
-            const timeStr = `${h}${m}`;
-            const displayStr = `⏰ 取餐時間: ${h}:${m}`;
-
-            if (activePickerTarget === 'pos') {
-                document.getElementById('selectedPickupTime').value = timeStr;
-                document.getElementById('pickupTimeBtn').innerText = displayStr;
-            } else {
-                document.getElementById('editSelectedPickupTime').value = timeStr;
-                document.getElementById('editPickupTimeBtn').innerText = displayStr;
-            }
-            closeTimePickerModal();
-        }
-
-        function closeTimePickerModal() {
-            document.getElementById('timePickerModal').style.display = 'none';
-        }
-
-        function appendNote(text) {
-            const noteInput = document.getElementById('orderNote');
-            if (noteInput.value.trim() === '') {
-                noteInput.value = text;
-            } else {
-                noteInput.value += ' ' + text;
-            }
-        }
-
-        function sortCartByMenuOrder(cartArray) {
-            return cartArray.sort((a, b) => {
-                const idxA = ALL_MENU_ITEMS.findIndex(m => m.name === a.name);
-                const idxB = ALL_MENU_ITEMS.findIndex(m => m.name === b.name);
-                return (idxA === -1 ? 999 : idxA) - (idxB === -1 ? 999 : idxB);
-            });
-        }
-
-        function safeSetStorage(key, value) { try { localStorage.setItem(key, value); } catch(e){} }
-        function safeGetStorage(key) { try { return localStorage.getItem(key); } catch(e){ return null; } }
-
-        window.addEventListener('DOMContentLoaded', () => {
-            if (safeGetStorage('isAuthorized') === 'true') {
-                document.getElementById('authOverlay').style.display = 'none';
-            } else {
-                document.getElementById('authOverlay').style.display = 'flex';
-            }
-            document.getElementById('accessPass').addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') checkPassword();
-            });
-
-            document.getElementById('statsDatePicker').value = getTodayYMD();
-            initTimeWheels();
-
-            // 每 10 秒自動檢查一次廚房 10 分鐘倒數警報
-            setInterval(checkKitchen10MinAlerts, 10000);
-        });
-
-        /* 全局變數初始化 */
-        let cart = [];
-        let localOrders = {};
-        let editingCart = [];
-        let currentMaxSeq = 0;
-
         function switchRole(role) {
-            currentRole = role;
             document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
-<!-- ... existing code -->
+            document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById(role).classList.add('active');
+            document.getElementById('btn-' + role).classList.add('active');
+            if (role === 'stats') renderStats();
+        }
+
+        function toggleDrinkSingle() {
+            const grid = document.getElementById('drinkSingleGrid');
+            const icon = document.getElementById('drinkAccordionIcon');
+            if (grid.style.display === 'none') {
+                grid.style.display = 'grid';
+                icon.innerText = '▲ [點擊收起]';
+            } else {
+                grid.style.display = 'none';
+                icon.innerText = '▼ [點擊展開]';
+            }
+        }
+
+        function addMainItem(name, price, category, bgClass) {
+            const newItem = {
+                id: Date.now() + Math.random(),
+                name, price, category, bgClass,
+                modifiers: [],
+                notes: []
+            };
+            cart.push(newItem);
+            selectedCartIndex = cart.length - 1; 
+            renderCart();
+        }
+
+        function addModifier(name, price, bgClass) {
+            if (cart.length === 0) return alert('請先選擇主餐或小食！');
+            if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
+                selectedCartIndex = cart.length - 1;
+            }
+            cart[selectedCartIndex].modifiers.push({ name, price, bgClass });
+            renderCart();
+        }
+
+        function addNoteToSelected(noteText) {
+            if (cart.length === 0) return alert('請先選擇主餐或小食！');
+            if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
+                selectedCartIndex = cart.length - 1;
+            }
+            if (!cart[selectedCartIndex].notes.includes(noteText)) {
+                cart[selectedCartIndex].notes.push(noteText);
+            }
+            renderCart();
+        }
+
+        function selectCartItem(index) {
+            selectedCartIndex = index;
+            renderCart();
+        }
+
+        function removeMainItem(index, event) {
+            event.stopPropagation();
+            cart.splice(index, 1);
+            if (selectedCartIndex >= cart.length) selectedCartIndex = cart.length - 1;
+            renderCart();
+        }
+
+        function renderCart() {
+            const list = document.getElementById('cartList');
+            if (cart.length === 0) {
+                list.innerHTML = '<div style="color:#888; text-align:center; padding:15px;">未點選餐點</div>';
+                document.getElementById('totalPrice').innerText = '0';
+                return;
+            }
+
+            let html = '', grandTotal = 0;
+            cart.forEach((item, idx) => {
+                let itemTotal = item.price;
+                let subHtml = '';
+                
+                item.modifiers.forEach(m => {
+                    itemTotal += m.price;
+                    subHtml += `<div class="cart-sub-item"><span>↳ ${m.name}</span><span>+$${m.price}</span></div>`;
+                });
+
+                if (item.notes.length > 0) {
+                    subHtml += `<div class="cart-sub-item" style="color:#d32f2f;"><span>↳ 備註: ${item.notes.join(', ')}</span></div>`;
+                }
+
+                grandTotal += itemTotal;
+                const isSelected = (idx === selectedCartIndex) ? 'selected' : '';
+
+                html += `
+                    <div class="cart-main-item ${isSelected}" onclick="selectCartItem(${idx})">
+                        <div class="cart-main-header">
+                            <span>${item.name}</span>
+                            <span>$${itemTotal} <b onclick="removeMainItem(${idx}, event)" style="color:red; margin-left:10px;">✕</b></span>
+                        </div>
+                        ${subHtml ? `<div class="cart-sub-list">${subHtml}</div>` : ''}
+                    </div>`;
+            });
+
+            list.innerHTML = html;
+            document.getElementById('totalPrice').innerText = grandTotal;
+        }
+
+        function submitOrder() {
+            if (cart.length === 0) return alert('購物車為空！');
+            currentMaxSeq += 1;
+            const seq = String(currentMaxSeq).padStart(3, '0');
+            const now = new Date();
+            const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
+            
+            const pH = document.getElementById('cartPickupHour').value;
+            const pM = document.getElementById('cartPickupMin').value;
+            const pickupTime = `${pH}:${pM}`;
+            const orderNote = document.getElementById('cartOrderNote').value.trim();
+
+            const orderData = {
+                seqNo: seq,
+                items: cart,
+                total: document.getElementById('totalPrice').innerText,
+                time: timeStr,
+                pickupTime: pickupTime,
+                orderNote: orderNote,
+                status: 'pending',
+                passStatus: 'pending',
+                isDeleted: false,
+                timestamp: Date.now()
+            };
+
+            if (db) {
+                db.ref('orders/' + orderData.timestamp).set(orderData);
+            } else {
+                localOrders[orderData.timestamp] = orderData;
+                renderAllViews(localOrders);
+            }
+
+            cart = [];
+            selectedCartIndex = -1;
+            document.getElementById('cartOrderNote').value = '';
+            renderCart();
+            resetPickupTimeToNow('cartPickupHour', 'cartPickupMin');
+            document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
+        }
+
+        function markOrderDeleted(id, seqNo) {
+            if (confirm(`⚠️ 確定要刪除單號 #${seqNo} 嗎？`)) {
+                if (db) {
+                    db.ref('orders/' + id + '/isDeleted').set(true);
+                } else {
+                    if (localOrders[id]) localOrders[id].isDeleted = true;
+                    renderAllViews(localOrders);
+                }
+            }
+        }
+
+        function restoreOrder(id, seqNo) {
+            if (confirm(`↩️ 確定要恢復單號 #${seqNo} 嗎？`)) {
+                if (db) {
+                    db.ref('orders/' + id + '/isDeleted').set(false);
+                } else {
+                    if (localOrders[id]) localOrders[id].isDeleted = false;
+                    renderAllViews(localOrders);
+                }
+            }
+        }
+
+        function openEditModal(order) {
+            document.getElementById('editOrderId').value = order.id;
+            document.getElementById('editModalTitle').innerText = `✏️ 修改訂單 #${order.seqNo}`;
+            editingCart = JSON.parse(JSON.stringify(order.items || []));
+            
+            if (order.pickupTime) {
+                const parts = order.pickupTime.split(':');
+                if (parts.length === 2) {
+                    document.getElementById('editPickupHour').value = parts[0];
+                    document.getElementById('editPickupMin').value = parts[1];
+                }
+            }
+            document.getElementById('editOrderNote').value = order.orderNote || '';
+
+            renderEditCartList();
+
+            let addGridHtml = '';
+            ALL_MENU_ITEMS.forEach(m => {
+                addGridHtml += `<button class="add-menu-btn" onclick="addItemToEdit('${m.name}', ${m.price}, '${m.category}')">+ ${m.name} ($${m.price})</button>`;
+            });
+            document.getElementById('addMenuGrid').innerHTML = addGridHtml;
+            document.getElementById('editModal').style.display = 'flex';
+        }
+
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        function renderEditCartList() {
+            let html = '', total = 0;
+            editingCart.forEach((item, idx) => {
+                let itemTotal = item.price;
+                (item.modifiers || []).forEach(m => itemTotal += m.price);
+                total += itemTotal;
+
+                html += `
+                    <div class="edit-item-row">
+                        <span>${item.name} ($${itemTotal})</span>
+                        <div>
+                            <button class="qty-btn" onclick="removeEditItem(${idx})">✕</button>
+                        </div>
+                    </div>`;
+            });
+            document.getElementById('editItemList').innerHTML = html || '<div style="color:#888;">無餐點</div>';
+            document.getElementById('editTotalPrice').innerText = total;
+        }
+
+        function removeEditItem(index) {
+            editingCart.splice(index, 1);
+            renderEditCartList();
+        }
+
+        function addItemToEdit(name, price, category) {
+            editingCart.push({
+                id: Date.now() + Math.random(),
+                name, price, category, bgClass: 'bg-other',
+                modifiers: [], notes: []
+            });
+            renderEditCartList();
+        }
+
+        function saveEditOrder() {
+            const id = document.getElementById('editOrderId').value;
+            if (!id) return;
+            if (editingCart.length === 0) return alert('修改後的訂單不能沒有餐點！');
+
+            const total = document.getElementById('editTotalPrice').innerText;
+            const pH = document.getElementById('editPickupHour').value;
+            const pM = document.getElementById('editPickupMin').value;
+            const pickupTime = `${pH}:${pM}`;
+            const orderNote = document.getElementById('editOrderNote').value.trim();
+
+            const updates = { 
+                items: editingCart, 
+                total: total,
+                pickupTime: pickupTime,
+                orderNote: orderNote
+            };
+
+            if (db) {
+                db.ref('orders/' + id).update(updates);
+            } else {
+                if (localOrders[id]) Object.assign(localOrders[id], updates);
+                renderAllViews(localOrders);
+            }
+            closeEditModal();
+        }
+
+        function getTodayStartTimestamp() {
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+        }
+
+        if (db) {
+            db.ref('orders').on('value', snapshot => {
+                renderAllViews(snapshot.val() || {});
+            });
+        }
+
+        function renderAllViews(data) {
+            localOrders = data;
+            let kitchenHtml = '', passHtml = '', selectOptions = '<option value="">-- 請選擇訂單 --</option>';
+            const todayStart = getTodayStartTimestamp();
+
+            let maxSeqToday = 0;
+            Object.keys(data).forEach(k => {
+                const o = data[k];
+                if (o && o.timestamp && o.timestamp >= todayStart && o.seqNo) {
+                    const num = parseInt(o.seqNo, 10);
+                    if (!isNaN(num) && num > maxSeqToday) maxSeqToday = num;
+                }
+            });
+            currentMaxSeq = maxSeqToday;
+            document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
+
+            const todayKeys = Object.keys(data).filter(k => {
+                const o = data[k];
+                return o && (o.timestamp ? o.timestamp >= todayStart : true);
+            });
+
+            todayKeys.forEach(k => {
+                const o = data[k];
+                const isDel = o.isDeleted === true;
+                const rawJson = JSON.stringify({ id: k, ...o }).replace(/'/g, "&apos;");
+
+                if (!isDel) {
+                    selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
+                }
+
+                let itemsStr = '';
+                (o.items || []).forEach(it => {
+                    itemsStr += `<div class="card-main-row ${it.bgClass}">
+                        <span>${it.name}</span>
+                    </div>`;
+                    (it.modifiers || []).forEach(m => {
+                        itemsStr += `<div class="card-sub-row ${m.bgClass || 'bg-other'}">
+                            <span>↳ ${m.name}</span><span>+$${m.price}</span>
+                        </div>`;
+                    });
+                    if (it.notes && it.notes.length > 0) {
+                        itemsStr += `<div class="card-sub-row bg-note">
+                            <span>↳ 備註: ${it.notes.join(', ')}</span>
+                        </div>`;
+                    }
+                });
+
+                let pickupStr = o.pickupTime ? `<div class="card-pickup-time">⏰ 預計取餐: ${o.pickupTime}</div>` : '';
+                let noteStr = o.orderNote ? `<div class="card-note">📝 全單備註: ${o.orderNote}</div>` : '';
+
+                // 廚房卡片
+                kitchenHtml += `
+                    <div class="order-card ${isDel ? 'deleted-card' : (o.status !== 'pending' ? 'completed' : '')}">
+                        <div class="card-header">
+                            <span>#${o.seqNo} ${isDel ? '<span class="deleted-badge">已刪除</span>' : ''}</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="font-size:1.1rem; color:#666;">${o.time}</span>
+                                <div class="card-actions">
+                                    ${!isDel ? `
+                                        <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改</button>
+                                        <button class="action-btn del" onclick="markOrderDeleted('${k}', '${o.seqNo}')">🗑️ 刪除</button>
+                                    ` : `
+                                        <button class="action-btn restore" onclick="restoreOrder('${k}', '${o.seqNo}')">↩️ 恢復</button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                        ${pickupStr}
+                        ${noteStr}
+                        <div class="card-items">${itemsStr}</div>
+                        ${!isDel ? `
+                            <button class="status-btn btn-cooking" onclick="db.ref('orders/${k}/status').set('${o.status === 'pending' ? 'done' : 'pending'}')">
+                                ${o.status === 'pending' ? '👨‍🍳 煮好出單' : '✅ 廚房已完成'}
+                            </button>
+                        ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
+                    </div>`;
+
+                // 出餐卡片
+                passHtml += `
+                    <div class="order-card ${isDel ? 'deleted-card' : (o.passStatus === 'ready' ? 'completed' : '')}">
+                        <div class="card-header">
+                            <span>#${o.seqNo} ${isDel ? '<span class="deleted-badge">已刪除</span>' : ''}</span>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <span style="font-size:1.1rem; color:#666;">${o.time}</span>
+                                <div class="card-actions">
+                                    ${!isDel ? `
+                                        <button class="action-btn" onclick='openEditModal(${rawJson})'>✏️ 修改</button>
+                                        <button class="action-btn del" onclick="markOrderDeleted('${k}', '${o.seqNo}')">🗑️ 刪除</button>
+                                    ` : `
+                                        <button class="action-btn restore" onclick="restoreOrder('${k}', '${o.seqNo}')">↩️ 恢復</button>
+                                    `}
+                                </div>
+                            </div>
+                        </div>
+                        ${pickupStr}
+                        ${noteStr}
+                        <div class="card-items">${itemsStr}</div>
+                        <div class="card-total-row"><span>總計:</span><span>$${o.total}</span></div>
+                        ${!isDel ? `
+                            <button class="status-btn btn-ready ${o.passStatus === 'ready' ? 'active-state' : ''}" onclick="db.ref('orders/${k}/passStatus').set('${o.passStatus === 'ready' ? 'pending' : 'ready'}')">
+                                ${o.passStatus === 'ready' ? '已出餐 ✓' : '未出餐'}
+                            </button>
+                        ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
+                    </div>`;
+            });
+
+            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">🍳 今日暫無訂單</div>';
+            document.getElementById('passOrders').innerHTML = passHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">📢 今日暫無出餐訂單</div>';
+            
+            const receiptSelect = document.getElementById('receiptSelect');
+            if(receiptSelect) receiptSelect.innerHTML = selectOptions;
+
+            renderStats();
+        }
+
+        /* 📊 統計模式計算與歷史週/月查詢 */
+        function switchStatsMode(range) {
+            currentStatsRange = range;
+            customSelectedDate = null;
+            document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + range).classList.add('active');
+            
+            document.getElementById('historyWeekSelectBox').style.display = (range === 'week') ? 'block' : 'none';
+            document.getElementById('historyMonthSelectBox').style.display = (range === 'month') ? 'block' : 'none';
+
+            if (range === 'week') populateWeekOptions();
+            if (range === 'month') populateMonthOptions();
+
+            renderStats();
+        }
+
+        function populateWeekOptions() {
+            const select = document.getElementById('statsWeekSelect');
+            select.innerHTML = '<option value="current">-- 本週數據 --</option>';
+            
+            const weeks = {};
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && o.timestamp) {
+                    const d = new Date(o.timestamp);
+                    const year = d.getFullYear();
+                    const weekNum = getWeekNumber(d);
+                    const key = `${year}-W${String(weekNum).padStart(2, '0')}`;
+                    weeks[key] = key;
+                }
+            });
+
+            Object.keys(weeks).sort().reverse().forEach(w => {
+                select.innerHTML += `<option value="${w}">${w}</option>`;
+            });
+        }
+
+        function populateMonthOptions() {
+            const select = document.getElementById('statsMonthSelect');
+            select.innerHTML = '<option value="current">-- 本月數據 --</option>';
+
+            const months = {};
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && o.timestamp) {
+                    const d = new Date(o.timestamp);
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, '0');
+                    const key = `${year}-${month}`;
+                    months[key] = key;
+                }
+            });
+
+            Object.keys(months).sort().reverse().forEach(m => {
+                select.innerHTML += `<option value="${m}">${m} 月</option>`;
+            });
+        }
+
+        function getWeekNumber(d) {
+            const date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+            const dayNum = date.getUTCDay() || 7;
+            date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+            const yearStart = new Date(Date.UTC(date.getUTCFullYear(),0,1));
+            return Math.ceil((((date - yearStart) / 86400000) + 1)/7);
+        }
+
+        function onWeekSelectChange() {
+            selectedWeekKey = document.getElementById('statsWeekSelect').value;
+            renderStats();
+        }
+
+        function onMonthSelectChange() {
+            selectedMonthKey = document.getElementById('statsMonthSelect').value;
+            renderStats();
+        }
+
+        function onCustomDateChange() {
+            const val = document.getElementById('customDatePicker').value;
+            if (val) {
+                customSelectedDate = val;
+                currentStatsRange = 'custom';
+                document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('historyWeekSelectBox').style.display = 'none';
+                document.getElementById('historyMonthSelectBox').style.display = 'none';
+                renderStats();
+            }
+        }
+
+        function renderStats() {
+            if (!localOrders) return;
+            const now = new Date();
+            let startTime = 0, endTime = 9999999999999;
+
+            if (currentStatsRange === 'custom' && customSelectedDate) {
+                const [y, m, d] = customSelectedDate.split('-').map(Number);
+                startTime = new Date(y, m - 1, d, 0, 0, 0).getTime();
+                endTime = new Date(y, m - 1, d, 23, 59, 59).getTime();
+                document.getElementById('statsTitle').innerText = `📊 營業概況 (${customSelectedDate})`;
+            } else if (currentStatsRange === 'day') {
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+                document.getElementById('statsTitle').innerText = '📊 營業概況 (今日)';
+            } else if (currentStatsRange === 'week') {
+                if (selectedWeekKey && selectedWeekKey !== 'current') {
+                    document.getElementById('statsTitle').innerText = `📊 營業概況 (歷史週: ${selectedWeekKey})`;
+                } else {
+                    const day = now.getDay() || 7;
+                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1, 0, 0, 0).getTime();
+                    document.getElementById('statsTitle').innerText = '📊 營業概況 (本週)';
+                }
+            } else if (currentStatsRange === 'month') {
+                if (selectedMonthKey && selectedMonthKey !== 'current') {
+                    const [y, m] = selectedMonthKey.split('-').map(Number);
+                    startTime = new Date(y, m - 1, 1, 0, 0, 0).getTime();
+                    endTime = new Date(y, m, 0, 23, 59, 59).getTime();
+                    document.getElementById('statsTitle').innerText = `📊 營業概況 (歷史月: ${selectedMonthKey})`;
+                } else {
+                    startTime = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).getTime();
+                    document.getElementById('statsTitle').innerText = '📊 營業概況 (本月)';
+                }
+            }
+
+            let totalRev = 0, count = 0;
+            const itemCounts = {};
+            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '意粉': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '加料/其他': { qty: 0, rev: 0 } };
+
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && !o.isDeleted && o.timestamp) {
+                    let match = false;
+                    if (currentStatsRange === 'week' && selectedWeekKey && selectedWeekKey !== 'current') {
+                        const d = new Date(o.timestamp);
+                        const wKey = `${d.getFullYear()}-W${String(getWeekNumber(d)).padStart(2, '0')}`;
+                        if (wKey === selectedWeekKey) match = true;
+                    } else if (o.timestamp >= startTime && o.timestamp <= endTime) {
+                        match = true;
+                    }
+
+                    if (match) {
+                        totalRev += parseFloat(o.total || 0);
+                        count++;
+
+                        (o.items || []).forEach(it => {
+                            itemCounts[it.name] = (itemCounts[it.name] || 0) + 1;
+                            const cat = it.category || '加料/其他';
+                            if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
+                            categoryStats[cat].qty += 1;
+                            categoryStats[cat].rev += (it.price || 0);
+
+                            (it.modifiers || []).forEach(m => {
+                                itemCounts[m.name] = (itemCounts[m.name] || 0) + 1;
+                                const mCat = m.price === 0 ? '跟餐飲品' : '加料/其他';
+                                if (!categoryStats[mCat]) categoryStats[mCat] = { qty: 0, rev: 0 };
+                                categoryStats[mCat].qty += 1;
+                                categoryStats[mCat].rev += (m.price || 0);
+                            });
+                        });
+                    }
+                }
+            });
+
+            document.getElementById('statRevenue').innerText = `$${totalRev}`;
+            document.getElementById('statCount').innerText = `${count} 單`;
+
+            let catHtml = '';
+            Object.keys(categoryStats).forEach(cName => {
+                const cData = categoryStats[cName];
+                catHtml += `<tr>
+                    <td><b>${cName}</b></td>
+                    <td>${cData.qty} 件</td>
+                    <td>$${cData.rev}</td>
+                </tr>`;
+            });
+            document.getElementById('statCategoryList').innerHTML = catHtml;
+
+            const sortedItems = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
+            let rankHtml = '';
+            sortedItems.forEach((name, idx) => {
+                rankHtml += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; font-weight:bold; font-size:1.1rem;">
+                        <span>${idx + 1}. ${name}</span>
+                        <span style="color:#6a1b9a;">${itemCounts[name]} 份</span>
+                    </div>`;
+            });
+            document.getElementById('statRankList').innerHTML = rankHtml || '<div style="color:#888; text-align:center; padding:10px;">該時段無銷售記錄</div>';
+        }
+    </script>
+</body>
+</html>
