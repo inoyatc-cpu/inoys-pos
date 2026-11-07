@@ -162,7 +162,7 @@
         .wheel-container {
             position: relative; height: 140px; width: 100px;
             background: #f9f9f9; border-radius: 8px; border: 2px solid #1976d2;
-            overflow: hidden; text-align: center;
+            overflow: hidden; text-align: center; touch-action: none;
         }
         .wheel-list {
             position: absolute; width: 100%; padding: 0; margin: 0; list-style: none;
@@ -685,7 +685,7 @@
             document.getElementById('timePickerModal').style.display = 'none';
         }
 
-        /* 建立滾輪互動邏輯 */
+        /* 建立滾輪互動邏輯（強制阻止網頁捲動） */
         function buildWheel(listId, min, max, initialVal, onSelect, step = 1) {
             const listEl = document.getElementById(listId);
             let html = `<li class="wheel-item" style="height:44px;"></li><li class="wheel-item" style="height:44px;"></li>`;
@@ -716,11 +716,16 @@
             let startY = 0, isDragging = false;
             const container = listEl.parentElement;
 
+            // 清理舊事件防重複繫結
+            container.onmousedown = null;
+            container.onwheel = null;
+
             container.onmousedown = (e) => {
                 isDragging = true;
                 startY = e.clientY;
                 e.preventDefault();
             };
+            
             window.onmousemove = (e) => {
                 if (!isDragging) return;
                 const diff = e.clientY - startY;
@@ -731,20 +736,28 @@
                     updatePosition(true);
                 }
             };
+            
             window.onmouseup = () => { isDragging = false; };
 
-            container.ontouchstart = (e) => {
-                startY = e.touches[0].clientY;
-            };
-            container.ontouchmove = (e) => {
+            // 使用 passive: false 徹底阻止手機版滾輪帶動網頁上下滑動
+            const touchMoveHandler = (e) => {
+                e.preventDefault();
                 const diff = e.touches[0].clientY - startY;
-                if (Math.abs(diff) > 18) {
+                if (Math.abs(diff) > 15) {
                     if (diff > 0 && currentIndex > 0) currentIndex--;
                     if (diff < 0 && currentIndex < (max - min) / step) currentIndex++;
                     startY = e.touches[0].clientY;
                     updatePosition(true);
                 }
             };
+
+            container.ontouchstart = (e) => {
+                startY = e.touches[0].clientY;
+            };
+
+            container.removeEventListener('touchmove', container._touchMoveListener);
+            container._touchMoveListener = touchMoveHandler;
+            container.addEventListener('touchmove', touchMoveHandler, { passive: false });
 
             container.onwheel = (e) => {
                 e.preventDefault();
