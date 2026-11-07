@@ -108,7 +108,7 @@
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        /* 小食類：深色系 (非黃底) */
+        /* 小食類：深色系 (非黃底) - 現已升級為父級主餐 */
         .item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
 
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
@@ -148,12 +148,6 @@
         }
         .note-tag:active { background: #ff9800; color: white; }
 
-        .time-picker-btn {
-            width: 100%; padding: 12px; font-size: 1.15rem; font-weight: bold;
-            background: #e3f2fd; color: #0d47a1; border: 2px solid #64b5f6;
-            border-radius: 8px; cursor: pointer; text-align: center; margin-bottom: 6px;
-        }
-
         .submit-btn { 
             width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
             font-size: 1.4rem; font-weight: 900; border-radius: 10px; cursor: pointer;
@@ -171,12 +165,8 @@
         }
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
 
-        /* 廚房與出餐字體大小統一 (仿傚廚房) */
+        /* 廚房與出餐字體大小統一 */
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
-        .card-actions { display: flex; gap: 8px; margin: 8px 0; justify-content: flex-end; }
-        .action-btn { background: #eee; border: 1px solid #bbb; border-radius: 6px; padding: 5px 8px; font-size: 0.9rem; font-weight: bold; cursor: pointer; color: #222; }
-        .action-btn.del { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
-
         .card-items { margin: 8px 0; }
         .card-main-row { font-size: 1.35rem; font-weight: 900; padding: 6px 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; }
         .card-sub-row { font-size: 1.1rem; font-weight: 800; padding: 4px 8px 4px 20px; color: #444; border-left: 3px solid #ff9800; margin-left: 10px; background: #fafafa; }
@@ -188,7 +178,7 @@
         .bg-pasta-red { background-color: #ffebee; color: #c62828; border: 1px solid #ef9a9a; }
         .bg-pasta-white { background-color: #ffffff; color: #222222; border: 1px solid #b0bec5; }
         .bg-snack { background-color: #3e2723; color: #ffffff; border: 1px solid #5d4037; }
-        .bg-drink { background-color: #c8e6c9; color: #1b5e20; border: 1px solid #81c784; }
+        .bg-drink { background-color: #c8e6c9; color: #1b5e20; border: 1px solid #a5d6a7; }
         .bg-other { background-color: #ede7f6; color: #4527a0; border: 1px solid #d1c4e9; }
         .bg-coke { background-color: #E61C24; color: #ffffff; }
         .bg-zero { background-color: #1E1E1E; color: #ffffff; }
@@ -197,11 +187,8 @@
         .bg-cream { background-color: #FFF176; color: #006B3F; }
 
         .card-total-row { display: flex; justify-content: space-between; border-top: 1px dashed #ccc; padding-top: 6px; font-weight: 900; font-size: 1.35rem; color: #c62828; margin-top: 6px; }
-        .card-pickup-time { background: #ffff00 !important; color: #0d47a1 !important; padding: 8px; border-radius: 6px; font-weight: 900; margin-bottom: 6px; font-size: 1.25rem; }
-
         .status-btn { width: 100%; padding: 14px; border: none; border-radius: 8px; font-weight: 900; font-size: 1.35rem; color: white; cursor: pointer; margin-top: auto; }
         .btn-cooking { background: #ff9800; }
-        .btn-done.active-state { background: #2e7d32; }
         .btn-ready { background: #ff9800; }
         .btn-ready.active-state { background: #e65100; }
 
@@ -248,7 +235,7 @@
     <!-- 1. 前台落單頁面 -->
     <div id="pos" class="page active">
         <div class="menu-container">
-            <!-- 丼飯類 (排列: 鳥 -> 豚 -> 翼) -->
+            <!-- 丼飯類 -->
             <div class="category-title cat-don">丼飯</div>
             <div class="grid">
                 <div class="item-card item-don-blue" onclick="addMainItem('鳥丼', 40, '丼飯', 'bg-don-blue')">鳥丼 $40</div>
@@ -263,7 +250,7 @@
                 <div class="item-card item-don-brown" onclick="addMainItem('哩翼', 42, '丼飯', 'bg-don-brown')">哩翼 $42</div>
             </div>
 
-            <!-- 意粉類 (茄類第一行，蒜類第二行) -->
+            <!-- 意粉類 -->
             <div class="category-title cat-noodle">意粉</div>
             <div class="grid">
                 <div class="item-card item-pasta-red" onclick="addMainItem('茄意', 26, '意粉', 'bg-pasta-red')">茄意 $26</div>
@@ -288,15 +275,15 @@
                 <div class="item-card item-cream" onclick="addModifier('忌廉(跟餐)', 3, 'bg-cream')">忌廉 $3</div>
             </div>
 
-            <!-- 小食類 (深色系) -->
+            <!-- 小食類 (已升級為父級主餐，可獨立單點) -->
             <div class="category-title cat-snack">小食</div>
             <div class="grid">
-                <div class="item-card item-snack" onclick="addModifier('煎餃', 20, 'bg-snack')">煎餃 $20</div>
-                <div class="item-card item-snack" onclick="addModifier('雞翼', 5, 'bg-snack')">雞翼 $5</div>
-                <div class="item-card item-snack" onclick="addModifier('4翼', 20, 'bg-snack')">4翼 $20</div>
+                <div class="item-card item-snack" onclick="addMainItem('煎餃', 20, '小食', 'bg-snack')">煎餃 $20</div>
+                <div class="item-card item-snack" onclick="addMainItem('雞翼', 5, '小食', 'bg-snack')">雞翼 $5</div>
+                <div class="item-card item-snack" onclick="addMainItem('4翼', 20, '小食', 'bg-snack')">4翼 $20</div>
             </div>
 
-            <!-- 其他 (含加料，點擊自動掛載於當前主餐) -->
+            <!-- 加料 / 其他 (子級配料) -->
             <div class="category-title cat-other">加料 / 其他</div>
             <div class="grid">
                 <div class="item-card item-other" onclick="addModifier('加蛋', 5, 'bg-other')">加蛋 $5</div>
@@ -323,7 +310,7 @@
             </div>
         </div>
 
-        <!-- 購物車區塊 (方案二父子展示) -->
+        <!-- 購物車區塊 -->
         <div class="cart-container">
             <div class="cart-title">🛒 已選餐點 (點擊項目可切換加料目標)</div>
             
@@ -392,12 +379,11 @@
     <script>
         const SYSTEM_PASSWORD = "26798267";
         let db = null;
-        let cart = []; // 結構: [{ id, name, price, bgClass, modifiers: [{name, price}], notes: [] }]
+        let cart = []; 
         let selectedCartIndex = -1;
         let localOrders = {};
         let currentMaxSeq = 0;
 
-        // Firebase 初始化
         const firebaseConfig = {
             apiKey: "AIzaSyACm7A_0l5kimIxQQGKjreLNpARMq3xeMA",
             authDomain: "inoya-pos.firebaseapp.com",
@@ -406,7 +392,6 @@
         };
         try { firebase.initializeApp(firebaseConfig); db = firebase.database(); } catch(e){}
 
-        /* 🔐 解鎖邏輯 */
         function checkPassword() {
             if (document.getElementById('accessPass').value.trim() === SYSTEM_PASSWORD) {
                 document.getElementById('authOverlay').style.display = 'none';
@@ -423,7 +408,6 @@
             document.getElementById('btn-' + role).classList.add('active');
         }
 
-        /* 🥤 折疊飲品單點 */
         function toggleDrinkSingle() {
             const grid = document.getElementById('drinkSingleGrid');
             const icon = document.getElementById('drinkAccordionIcon');
@@ -436,7 +420,6 @@
             }
         }
 
-        /* 🛒 方案二購物車邏輯 */
         function addMainItem(name, price, category, bgClass) {
             const newItem = {
                 id: Date.now() + Math.random(),
@@ -445,12 +428,12 @@
                 notes: []
             };
             cart.push(newItem);
-            selectedCartIndex = cart.length - 1; // 自動選取最新加入的主餐
+            selectedCartIndex = cart.length - 1; 
             renderCart();
         }
 
         function addModifier(name, price, bgClass) {
-            if (cart.length === 0) return alert('請先選擇主餐（如丼飯或意粉）！');
+            if (cart.length === 0) return alert('請先選擇主餐或小食！');
             if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
                 selectedCartIndex = cart.length - 1;
             }
@@ -459,7 +442,7 @@
         }
 
         function addNoteToSelected(noteText) {
-            if (cart.length === 0) return alert('請先選擇主餐！');
+            if (cart.length === 0) return alert('請先選擇主餐或小食！');
             if (selectedCartIndex < 0 || selectedCartIndex >= cart.length) {
                 selectedCartIndex = cart.length - 1;
             }
@@ -550,7 +533,6 @@
             document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
         }
 
-        /* 渲染廚房與出餐頁面 (1:1 配色) */
         if (db) {
             db.ref('orders').on('value', snapshot => {
                 renderAllViews(snapshot.val() || {});
@@ -580,7 +562,6 @@
                     }
                 });
 
-                // 廚房卡片
                 kitchenHtml += `
                     <div class="order-card ${o.status !== 'pending' ? 'completed' : ''}">
                         <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
@@ -590,7 +571,6 @@
                         </button>
                     </div>`;
 
-                // 出餐卡片
                 passHtml += `
                     <div class="order-card ${o.passStatus === 'ready' ? 'completed' : ''}">
                         <div class="card-header"><span>#${o.seqNo}</span><span>${o.time}</span></div>
@@ -607,7 +587,6 @@
             document.getElementById('receiptSelect').innerHTML = selectOptions;
         }
 
-        /* 📸 明細與圖片下載功能 */
         function renderReceiptDetail() {
             const key = document.getElementById('receiptSelect').value;
             const container = document.getElementById('receiptContent');
