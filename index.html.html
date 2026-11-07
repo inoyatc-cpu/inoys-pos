@@ -108,7 +108,7 @@
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        /* 小食類：深色系 (非黃底) - 現已升級為父級主餐 */
+        /* 小食類：深色系 */
         .item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
 
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
@@ -129,7 +129,7 @@
         }
         .cart-title { font-weight: bold; font-size: 1.25rem; margin-bottom: 10px; color: #222; border-bottom: 2px solid #eee; padding-bottom: 6px; }
         
-        /* 方案二：購物車主餐及附屬配料 (父子結構) */
+        /* 父子結構 */
         .cart-main-item {
             border: 2px solid #ddd; border-radius: 8px; padding: 10px; margin-bottom: 8px;
             background: #fafafa; cursor: pointer; transition: all 0.2s;
@@ -154,7 +154,7 @@
             box-shadow: 0 4px 10px rgba(46,125,50,0.4); margin-top: 8px;
         }
 
-        /* === 2. 廚房 & 出餐 共用卡片 (配色 1:1 對應前台) === */
+        /* === 2. 廚房 & 出餐 共用卡片 === */
         .kds-container { padding: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; width: 100%; }
         @media (max-width: 600px) { .kds-container { grid-template-columns: 1fr; } }
         
@@ -165,7 +165,6 @@
         }
         .order-card.completed { background: #e0e0e0 !important; border-top-color: #757575 !important; opacity: 0.75; }
 
-        /* 廚房與出餐字體大小統一 */
         .card-header { display: flex; justify-content: space-between; font-weight: 900; font-size: 1.4rem; border-bottom: 2px solid #eee; padding-bottom: 6px; }
         .card-items { margin: 8px 0; }
         .card-main-row { font-size: 1.35rem; font-weight: 900; padding: 6px 8px; border-radius: 6px; margin-top: 6px; display: flex; justify-content: space-between; }
@@ -192,7 +191,7 @@
         .btn-ready { background: #ff9800; }
         .btn-ready.active-state { background: #e65100; }
 
-        /* === 3. 明細截圖區塊 (電子單據) === */
+        /* === 3. 明細截圖區塊 === */
         .receipt-paper {
             background: #ffffff; width: 100%; max-width: 420px; margin: 15px auto; padding: 20px;
             border-radius: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); border: 1px solid #ddd;
@@ -275,17 +274,17 @@
                 <div class="item-card item-cream" onclick="addModifier('忌廉(跟餐)', 3, 'bg-cream')">忌廉 $3</div>
             </div>
 
-            <!-- 小食類 (已升級為父級主餐，可獨立單點) -->
+            <!-- 小食類 -->
             <div class="category-title cat-snack">小食</div>
             <div class="grid">
                 <div class="item-card item-snack" onclick="addMainItem('煎餃', 20, '小食', 'bg-snack')">煎餃 $20</div>
-                <div class="item-card item-snack" onclick="addMainItem('雞翼', 5, '小食', 'bg-snack')">雞翼 $5</div>
                 <div class="item-card item-snack" onclick="addMainItem('4翼', 20, '小食', 'bg-snack')">4翼 $20</div>
             </div>
 
-            <!-- 加料 / 其他 (子級配料) -->
+            <!-- 加料 / 其他 (含 雞翼 $5) -->
             <div class="category-title cat-other">加料 / 其他</div>
             <div class="grid">
+                <div class="item-card item-other" onclick="addModifier('雞翼', 5, 'bg-snack')">雞翼 $5</div>
                 <div class="item-card item-other" onclick="addModifier('加蛋', 5, 'bg-other')">加蛋 $5</div>
                 <div class="item-card item-other" onclick="addModifier('加腸', 6, 'bg-other')">加腸 $6</div>
                 <div class="item-card item-other" onclick="addModifier('泡菜', 6, 'bg-other')">泡菜 $6</div>
@@ -533,6 +532,12 @@
             document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
         }
 
+        /* 取得今日開始的時間戳 (00:00:00) */
+        function getTodayStartTimestamp() {
+            const now = new Date();
+            return new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+        }
+
         if (db) {
             db.ref('orders').on('value', snapshot => {
                 renderAllViews(snapshot.val() || {});
@@ -542,11 +547,16 @@
         function renderAllViews(data) {
             localOrders = data;
             let kitchenHtml = '', passHtml = '', selectOptions = '<option value="">-- 請選擇訂單 --</option>';
+            const todayStart = getTodayStartTimestamp();
 
-            Object.keys(data).forEach(k => {
+            /* 💡 自動過濾掉非今日建立的訂單 */
+            const orderKeys = Object.keys(data).filter(k => {
                 const o = data[k];
-                if (!o || o.isDeleted) return;
+                return o && !o.isDeleted && (o.timestamp ? o.timestamp >= todayStart : true);
+            });
 
+            orderKeys.forEach(k => {
+                const o = data[k];
                 selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
 
                 let itemsStr = '';
@@ -582,8 +592,8 @@
                     </div>`;
             });
 
-            document.getElementById('kitchenOrders').innerHTML = kitchenHtml;
-            document.getElementById('passOrders').innerHTML = passHtml;
+            document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">🍳 今日暫無訂單</div>';
+            document.getElementById('passOrders').innerHTML = passHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">📢 今日暫無出餐訂單</div>';
             document.getElementById('receiptSelect').innerHTML = selectOptions;
         }
 
@@ -606,7 +616,7 @@
                     subItems += `<div class="receipt-sub-row">↳ ${m.name} (+$${m.price})</div>`;
                 });
                 if (it.notes && it.notes.length > 0) {
-                    subItems += `<div class="receipt-sub-row" style="color:#d32f2f;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                    subItems += `<div class="receipt-sub-row" style="color:#c62828;">↳ 備註: ${it.notes.join(', ')}</div>`;
                 }
 
                 itemsHtml += `
