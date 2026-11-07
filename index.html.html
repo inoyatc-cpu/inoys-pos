@@ -85,6 +85,7 @@
         #pos.page { background-color: #fff8e7; } 
         #kitchen.page { background-color: #1a1a1a; } 
         #pass.page { background-color: #0d1b2a; } 
+        #detail.page { background-color: #e0f2f1; }
         #stats.page { background-color: #f3e5f5; } 
 
         .page.active { display: block; }
@@ -94,9 +95,9 @@
         .category-title { font-size: 1.3rem; font-weight: 900; margin: 12px 0 8px; padding-left: 8px; border-left: 5px solid #333; }
         .cat-don { border-left-color: #e65100; color: #d84315; }
         .cat-noodle { border-left-color: #0d47a1; color: #1565c0; }
-        .cat-snack { border-left-color: #e65100; color: #e65100; }
+        .cat-snack { border-left-color: #3e2723; color: #3e2723; }
         .cat-drink-set { border-left-color: #1b5e20; color: #2e7d32; }
-        .cat-drink-single { border-left-color: #00838f; color: #006064; }
+        .cat-drink-single { border-left-color: #00838f; color: #006064; cursor: pointer; user-select: none; }
         .cat-other { border-left-color: #6a1b9a; color: #4a148c; }
 
         .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; }
@@ -118,8 +119,8 @@
         .item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        /* 小食按鈕樣式：鮮橙黃高對比配色 */
-        .item-snack { background: #ffe0b2; color: #e65100; border-color: #ffb74d; }
+        /* ✨ 小食按鈕樣式：全新深濃棕紅/啡色高對比配色 (非黃色) */
+        .item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
 
         .item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
         .item-drink-single { background: #b2ebf2; color: #006064; border-color: #4dd0e1; }
@@ -242,8 +243,8 @@
         .card-item.item-pasta-red { background: #ffebee; color: #c62828; border-color: #ef9a9a; }
         .card-item.item-pasta-white { background: #ffffff; color: #222222; border-color: #b0bec5; }
 
-        /* 小食類 */
-        .card-item.item-snack { background: #ffe0b2; color: #e65100; border-color: #ffb74d; }
+        /* 小食類 - 深濃棕紅/啡色 */
+        .card-item.item-snack { background: #3e2723; color: #ffffff; border-color: #5d4037; }
 
         /* 飲品類 */
         .card-item.item-drink { background: #c8e6c9; color: #1b5e20; border-color: #81c784; }
@@ -280,7 +281,39 @@
         .btn-ready { background: #ff9800; box-shadow: 0 3px 6px rgba(255,152,0,0.3); }
         .btn-ready.active-state { background: #e65100; box-shadow: 0 3px 6px rgba(230,81,0,0.3); }
 
-        /* === 3. 統計區塊樣式 === */
+        /* === 3. 明細頁面 (截圖專用單據) === */
+        .receipt-picker-bar {
+            padding: 12px; background: white; border-bottom: 2px solid #009688;
+            display: flex; gap: 8px; align-items: center; justify-content: center; flex-wrap: wrap;
+        }
+        .receipt-select {
+            padding: 10px 14px; font-size: 1.1rem; border: 2px solid #009688; border-radius: 8px;
+            font-weight: bold; background: #f0fdf4; outline: none; max-width: 100%;
+        }
+        .receipt-container {
+            display: flex; justify-content: center; padding: 20px 10px; width: 100%;
+        }
+        .receipt-card {
+            background: #ffffff; width: 100%; max-width: 440px; border-radius: 16px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.12); padding: 24px; border: 1px solid #e0e0e0;
+            position: relative;
+        }
+        .receipt-header { text-align: center; border-bottom: 2px dashed #009688; padding-bottom: 12px; margin-bottom: 14px; }
+        .receipt-title { font-size: 1.8rem; font-weight: 900; color: #004d40; margin: 0; }
+        .receipt-sub { font-size: 1rem; color: #666; margin-top: 4px; }
+        .receipt-seq { font-size: 2.4rem; font-weight: 900; color: #d32f2f; margin: 8px 0; letter-spacing: 1px; }
+        .receipt-info-row { display: flex; justify-content: space-between; font-size: 1.05rem; color: #444; margin-bottom: 6px; font-weight: 600; }
+        .receipt-table { width: 100%; border-collapse: collapse; margin: 14px 0; }
+        .receipt-table th { text-align: left; border-bottom: 2px solid #333; padding: 8px 4px; font-size: 1.1rem; color: #222; }
+        .receipt-table td { padding: 10px 4px; border-bottom: 1px solid #eee; font-size: 1.15rem; font-weight: bold; }
+        .receipt-total-box {
+            background: #e0f2f1; border-radius: 10px; padding: 12px 16px; display: flex;
+            justify-content: space-between; align-items: center; margin-top: 14px; border: 2px solid #009688;
+        }
+        .receipt-total-price { font-size: 2rem; font-weight: 900; color: #004d40; }
+        .receipt-footer { text-align: center; margin-top: 16px; font-size: 0.95rem; color: #777; font-weight: 600; }
+
+        /* === 4. 統計區塊樣式 === */
         .stats-box { padding: 15px; background: white; margin: 12px 10px; border-radius: 12px; font-size: 1.1rem; box-shadow: 0 3px 8px rgba(0,0,0,0.05); }
         .stats-title { margin-top:0; font-size:1.3rem; font-weight:900; border-bottom: 2px solid #ff9800; padding-bottom: 6px; color: #333; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 6px; }
         .stats-subtitle { font-size: 0.85rem; color: #2e7d32; background: #e8f5e9; padding: 3px 6px; border-radius: 6px; border: 1px solid #a5d6a7; font-weight: normal; }
@@ -367,6 +400,7 @@
         <button class="nav-btn active" id="btn-pos" onclick="switchRole('pos')">前台</button>
         <button class="nav-btn" id="btn-kitchen" onclick="switchRole('kitchen')">廚房</button>
         <button class="nav-btn" id="btn-pass" onclick="switchRole('pass')">出餐</button>
+        <button class="nav-btn" id="btn-detail" onclick="switchRole('detail')">明細</button>
         <button class="nav-btn" id="btn-stats" onclick="switchRole('stats')">統計</button>
         <button class="nav-btn lock-btn" onclick="lockSystem()" title="重新鎖定">🔒</button>
     </div>
@@ -438,8 +472,11 @@
                 <div class="item-card item-other" onclick="addToCart('差價', 1, '其他')">差價 $1</div>
             </div>
 
-            <div class="category-title cat-drink-single">飲品 (單點)</div>
-            <div class="grid">
+            <!-- 🥤 飲品 (單點)：可折疊式選單（預設收起） -->
+            <div class="category-title cat-drink-single" onclick="toggleDrinkSingleCategory()">
+                🥤 飲品 (單點) <span id="drinkSingleToggleIcon" style="font-size:0.95rem; color:#00838f; margin-left:6px; background:#e0f7fa; padding:2px 8px; border-radius:12px; border:1px solid #4dd0e1;">▼ [點擊展開]</span>
+            </div>
+            <div class="grid" id="gridDrinkSingle" style="display:none; transition: all 0.3s ease;">
                 <div class="item-card item-drink-single" onclick="addToCart('泰奶', 5, '飲品')">泰奶 $5</div>
                 <div class="item-card item-drink-single" onclick="addToCart('冬檸', 5, '飲品')">冬檸 $5</div>
                 <div class="item-card item-drink-single" onclick="addToCart('烏龍', 5, '飲品')">烏龍 $5</div>
@@ -495,7 +532,25 @@
         <div class="kds-container" id="passOrders" style="padding-top:15px;"></div>
     </div>
 
-    <!-- 4. 統計頁面 -->
+    <!-- 4. 明細頁面 (客人單據 / 截圖專用) -->
+    <div id="detail" class="page">
+        <div class="receipt-picker-bar">
+            <label style="font-weight:bold; color:#004d40;">🧾 選擇訂單查看明細：</label>
+            <select id="receiptOrderSelect" class="receipt-select" onchange="renderSelectedReceipt()">
+                <option value="">-- 請選擇單號 --</option>
+            </select>
+        </div>
+
+        <div class="receipt-container">
+            <div id="receiptCardBox" class="receipt-card">
+                <div style="text-align:center; padding:30px; color:#888; font-weight:bold;">
+                    請在上方選擇訂單以生成明細截圖單據
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 5. 統計頁面 -->
     <div id="stats" class="page">
         <div class="stats-box">
             <h3 class="stats-title">
@@ -704,6 +759,7 @@
         let currentRawData = {};
         let activePickerTarget = 'pos'; // 'pos' 或 'edit'
         let currentRole = 'pos';
+        let selectedReceiptOrderId = null;
 
         // 🔊 Web Audio API 提示音
         const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
@@ -958,7 +1014,7 @@
             document.getElementById(role).classList.add('active');
             document.getElementById('btn-' + role).classList.add('active');
             
-            const titles = { pos: '前台模式', kitchen: '廚房製作頁面', pass: '出餐叫號頁面', stats: '統計模式' };
+            const titles = { pos: '前台模式', kitchen: '廚房製作頁面', pass: '出餐叫號頁面', detail: '明細截圖頁面', stats: '統計模式' };
             const toast = document.getElementById('modeToast');
             toast.innerText = `已切換至【${titles[role]}】`;
             toast.style.display = 'block';
@@ -966,6 +1022,21 @@
 
             if (role === 'kitchen') {
                 checkKitchen10MinAlerts();
+            } else if (role === 'detail') {
+                renderReceiptSelectOptions();
+            }
+        }
+
+        // 🥤 飲品 (單點) 分類展開/折疊切換
+        function toggleDrinkSingleCategory() {
+            const grid = document.getElementById('gridDrinkSingle');
+            const icon = document.getElementById('drinkSingleToggleIcon');
+            if (grid.style.display === 'none' || grid.style.display === '') {
+                grid.style.display = 'grid';
+                icon.innerHTML = '▲ [點擊收起]';
+            } else {
+                grid.style.display = 'none';
+                icon.innerHTML = '▼ [點擊展開]';
             }
         }
 
@@ -1512,6 +1583,103 @@
 
             currentMaxSeq = maxSeqToday;
             updateNextSeqDisplay();
+
+            // 若目前在「明細」頁面，同步刷新內容
+            if (currentRole === 'detail') {
+                renderReceiptSelectOptions();
+            }
+        }
+
+        // 🧾 渲染明細下拉選單
+        function renderReceiptSelectOptions() {
+            const select = document.getElementById('receiptOrderSelect');
+            const now = new Date();
+            const startOfToday = new Date(now.getFullYear(), now.getMonth(), now.getDate()).getTime();
+
+            const todayOrders = Object.keys(currentRawData)
+                .map(k => ({ id: k, ...currentRawData[k] }))
+                .filter(o => !o.isDeleted && o.timestamp && o.timestamp >= startOfToday)
+                .sort((a, b) => (parseInt(b.seqNo, 10) || 0) - (parseInt(a.seqNo, 10) || 0));
+
+            let html = '<option value="">-- 請選擇單號 --</option>';
+            todayOrders.forEach(o => {
+                const isSel = (selectedReceiptOrderId === o.id) ? 'selected' : '';
+                html += `<option value="${o.id}" ${isSel}>#${o.seqNo} (${o.time}) - $${o.total}</option>`;
+            });
+            select.innerHTML = html;
+
+            if (!selectedReceiptOrderId && todayOrders.length > 0) {
+                selectedReceiptOrderId = todayOrders[0].id;
+                select.value = selectedReceiptOrderId;
+            }
+
+            renderSelectedReceipt();
+        }
+
+        // 🧾 渲染選定單據卡片（供發給客人截圖）
+        function renderSelectedReceipt() {
+            const select = document.getElementById('receiptOrderSelect');
+            const orderId = select.value;
+            selectedReceiptOrderId = orderId;
+            const container = document.getElementById('receiptCardBox');
+
+            if (!orderId || !currentRawData[orderId]) {
+                container.innerHTML = `<div style="text-align:center; padding:30px; color:#888; font-weight:bold;">請在上方選擇訂單以生成明細截圖單據</div>`;
+                return;
+            }
+
+            const o = currentRawData[orderId];
+            let rowsHtml = '';
+            (o.items || []).forEach(it => {
+                const sub = (it.price || 0) * (it.qty || 0);
+                rowsHtml += `
+                    <tr>
+                        <td>${it.name}</td>
+                        <td style="text-align:center;">x${it.qty}</td>
+                        <td style="text-align:right; color:#d32f2f;">$${sub}</td>
+                    </tr>`;
+            });
+
+            const pickupStr = o.pickupTime ? `<div class="receipt-info-row" style="color:#0d47a1;"><span>⏰ 取餐時間：</span><span><b>${o.pickupTime}</b></span></div>` : '';
+            const noteStr = o.note ? `<div class="receipt-info-row" style="color:#c62828;"><span>📝 備註：</span><span><b>${o.note}</b></span></div>` : '';
+
+            container.innerHTML = `
+                <div class="receipt-header">
+                    <h2 class="receipt-title">井家 Inoya</h2>
+                    <div class="receipt-sub">電子訂單明細</div>
+                    <div class="receipt-seq">#${o.seqNo}</div>
+                </div>
+
+                <div class="receipt-info-row">
+                    <span>下單時間：</span>
+                    <span>${o.time || '--:--'}</span>
+                </div>
+                ${pickupStr}
+                ${noteStr}
+
+                <table class="receipt-table">
+                    <thead>
+                        <tr>
+                            <th>餐點名稱</th>
+                            <th style="text-align:center;">數量</th>
+                            <th style="text-align:right;">小計</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rowsHtml}
+                    </tbody>
+                </table>
+
+                <div class="receipt-total-box">
+                    <span style="font-size:1.2rem; font-weight:bold; color:#333;">應付總金額</span>
+                    <span class="receipt-total-price">$${o.total || 0}</span>
+                </div>
+
+                <div class="receipt-footer">
+                    多謝惠顧！祝您用餐愉快 🍚<br>
+                    <span style="font-size:0.8rem; color:#aaa;">Inoya POS Synchronized Receipt System</span>
+                </div>
+            `;
         }
     </script>
 </body>
