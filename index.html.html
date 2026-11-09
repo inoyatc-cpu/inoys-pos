@@ -1212,4 +1212,225 @@
             });
 
             document.getElementById('kitchenOrders').innerHTML = kitchenHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">🍳 今日暫無訂單</div>';
-            document.getElementById('passOrders').innerHTML = passHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">📢
+            document.getElementById('passOrders').innerHTML = passHtml || '<div style="color:#fff; text-align:center; grid-column: 1/-1; padding: 30px; font-size: 1.3rem;">📢 今日暫無出餐訂單</div>';
+            document.getElementById('receiptSelect').innerHTML = selectOptions;
+
+            renderStats();
+        }
+
+        function switchStatsMode(range) {
+            currentStatsRange = range;
+            customSelectedDate = null;
+            historySelectedValue = null;
+            document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+            document.getElementById('tab-' + range).classList.add('active');
+
+            const historyBox = document.getElementById('historySelectorBox');
+            if (range === 'week' || range === 'month') {
+                historyBox.style.display = 'block';
+                populateHistoryDropdown(range);
+            } else {
+                historyBox.style.display = 'none';
+            }
+            renderStats();
+        }
+
+        function populateHistoryDropdown(range) {
+            const select = document.getElementById('historySelect');
+            const optionsMap = {};
+
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && o.timestamp) {
+                    const d = new Date(o.timestamp);
+                    if (range === 'month') {
+                        const key = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+                        optionsMap[key] = `${d.getFullYear()}年${d.getMonth()+1}月`;
+                    } else if (range === 'week') {
+                        const startOfWeek = new Date(d.getFullYear(), d.getMonth(), d.getDate() - (d.getDay()||7) + 1);
+                        const key = startOfWeek.getTime();
+                        optionsMap[key] = `週起始日: ${startOfWeek.getFullYear()}-${startOfWeek.getMonth()+1}-${startOfWeek.getDate()}`;
+                    }
+                }
+            });
+
+            let html = '<option value="">-- 當前最新時段 --</option>';
+            Object.keys(optionsMap).sort().reverse().forEach(key => {
+                html += `<option value="${key}">${optionsMap[key]}</option>`;
+            });
+            select.innerHTML = html;
+        }
+
+        function onHistorySelectChange() {
+            historySelectedValue = document.getElementById('historySelect').value;
+            renderStats();
+        }
+
+        function onCustomDateChange() {
+            const val = document.getElementById('customDatePicker').value;
+            if (val) {
+                customSelectedDate = val;
+                currentStatsRange = 'custom';
+                document.querySelectorAll('.stats-tab-btn').forEach(b => b.classList.remove('active'));
+                document.getElementById('historySelectorBox').style.display = 'none';
+                renderStats();
+            }
+        }
+
+        function renderStats() {
+            if (!localOrders) return;
+            const now = new Date();
+            let startTime = 0, endTime = 9999999999999;
+
+            if (currentStatsRange === 'custom' && customSelectedDate) {
+                const [y, m, d] = customSelectedDate.split('-').map(Number);
+                startTime = new Date(y, m - 1, d, 0, 0, 0).getTime();
+                endTime = new Date(y, m - 1, d, 23, 59, 59).getTime();
+                document.getElementById('statsTitle').innerText = `📊 營業概況 (${customSelectedDate})`;
+            } else if (currentStatsRange === 'day') {
+                startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 0, 0, 0).getTime();
+                document.getElementById('statsTitle').innerText = '📊 營業概況 (今日)';
+            } else if (currentStatsRange === 'week') {
+                if (historySelectedValue) {
+                    startTime = parseInt(historySelectedValue, 10);
+                    endTime = startTime + (7 * 24 * 60 * 60 * 1000) - 1;
+                    document.getElementById('statsTitle').innerText = '📊 營業概況 (歷史週)';
+                } else {
+                    const day = now.getDay() || 7;
+                    startTime = new Date(now.getFullYear(), now.getMonth(), now.getDate() - day + 1, 0, 0, 0).getTime();
+                    document.getElementById('statsTitle').innerText = '📊 營業概況 (本週)';
+                }
+            } else if (currentStatsRange === 'month') {
+                if (historySelectedValue) {
+                    const [y, m] = historySelectedValue.split('-').map(Number);
+                    startTime = new Date(y, m - 1, 1, 0, 0, 0).getTime();
+                    endTime = new Date(y, m, 0, 23, 59, 59).getTime();
+                    document.getElementById('statsTitle').innerText = `📊 營業概況 (${y}年${m}月)`;
+                } else {
+                    startTime = new Date(now.getFullYear(), now.getMonth(), 1, 0, 0, 0).getTime();
+                    document.getElementById('statsTitle').innerText = '📊 營業概況 (本月)';
+                }
+            }
+
+            let totalRev = 0, count = 0;
+            const itemCounts = {};
+            const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '意粉': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '加料/其他': { qty: 0, rev: 0 } };
+
+            Object.keys(localOrders).forEach(k => {
+                const o = localOrders[k];
+                if (o && !o.isDeleted && o.timestamp && o.timestamp >= startTime && o.timestamp <= endTime) {
+                    totalRev += parseFloat(o.total || 0);
+                    count++;
+
+                    (o.items || []).forEach(it => {
+                        const fullName = MENU_FULL_NAMES[it.name] || it.name;
+                        itemCounts[fullName] = (itemCounts[fullName] || 0) + 1;
+                        const cat = it.category || '加料/其他';
+                        if (!categoryStats[cat]) categoryStats[cat] = { qty: 0, rev: 0 };
+                        categoryStats[cat].qty += 1;
+                        categoryStats[cat].rev += (it.price || 0);
+
+                        (it.modifiers || []).forEach(m => {
+                            const mFullName = MENU_FULL_NAMES[m.name] || m.name;
+                            itemCounts[mFullName] = (itemCounts[mFullName] || 0) + 1;
+                            const mCat = m.price === 0 ? '跟餐飲品' : '加料/其他';
+                            if (!categoryStats[mCat]) categoryStats[mCat] = { qty: 0, rev: 0 };
+                            categoryStats[mCat].qty += 1;
+                            categoryStats[mCat].rev += (m.price || 0);
+                        });
+                    });
+                }
+            });
+
+            document.getElementById('statRevenue').innerText = `$${totalRev}`;
+            document.getElementById('statCount').innerText = `${count} 單`;
+
+            let catHtml = '';
+            Object.keys(categoryStats).forEach(cName => {
+                const cData = categoryStats[cName];
+                catHtml += `<tr>
+                    <td><b>${cName}</b></td>
+                    <td>${cData.qty} 件</td>
+                    <td>$${cData.rev}</td>
+                </tr>`;
+            });
+            document.getElementById('statCategoryList').innerHTML = catHtml;
+
+            const sortedItems = Object.keys(itemCounts).sort((a, b) => itemCounts[b] - itemCounts[a]);
+            let rankHtml = '';
+            sortedItems.forEach((name, idx) => {
+                rankHtml += `
+                    <div style="display:flex; justify-content:space-between; padding:8px 0; border-bottom:1px solid #eee; font-weight:bold; font-size:1.1rem;">
+                        <span>${idx + 1}. ${name}</span>
+                        <span style="color:#6a1b9a;">${itemCounts[name]} 份</span>
+                    </div>`;
+            });
+            document.getElementById('statRankList').innerHTML = rankHtml || '<div style="color:#888; text-align:center; padding:10px;">該時段無銷售記錄</div>';
+        }
+
+        function renderReceiptDetail() {
+            const key = document.getElementById('receiptSelect').value;
+            const container = document.getElementById('receiptContent');
+            if (!key || !localOrders[key]) {
+                container.innerHTML = '<p style="text-align: center; color: #888;">請選擇上方單號以顯示明細</p>';
+                return;
+            }
+
+            const o = localOrders[key];
+            let itemsHtml = '';
+            const orderDateStr = o.date || getTodayYMD(o.timestamp);
+
+            (o.items || []).forEach(it => {
+                let subTotal = it.price;
+                let subItems = '';
+                const mainFullName = MENU_FULL_NAMES[it.name] || it.name;
+
+                (it.modifiers || []).forEach(m => {
+                    subTotal += m.price;
+                    const modFullName = MENU_FULL_NAMES[m.name] || m.name;
+                    subItems += `<div class="receipt-sub-row">↳ ${modFullName} (+$${m.price})</div>`;
+                });
+                if (it.notes && it.notes.length > 0) {
+                    subItems += `<div class="receipt-sub-row" style="color:#d32f2f;">↳ 備註: ${it.notes.join(', ')}</div>`;
+                }
+
+                itemsHtml += `
+                    <div class="receipt-row"><span>${mainFullName}</span><span>$${subTotal}</span></div>
+                    ${subItems}`;
+            });
+
+            if (o.remark) {
+                itemsHtml += `<div class="receipt-sub-row" style="color:#c62828; margin-top:6px;">📝 全單備註: ${o.remark}</div>`;
+            }
+
+            const pTime = o.pickupTime ? `<div style="font-size:1.1rem; color:#e65100;">⏰ 取餐時間：<b>${o.pickupTime}</b></div>` : '';
+
+            container.innerHTML = `
+                <div style="margin-bottom: 12px; font-weight: bold; font-size: 1.05rem; border-bottom: 2px solid #eee; padding-bottom: 8px;">
+                    <div style="font-size:1.4rem; color:#222;">單號：#${o.seqNo}</div>
+                    <div style="color:#555; margin-top:4px;">落單日期：${orderDateStr}</div>
+                    <div style="color:#555;">落單時間：${o.time}</div>
+                    ${pTime}
+                </div>
+                <div style="border-bottom: 2px solid #eee; padding-bottom: 8px; margin-bottom: 8px;">${itemsHtml}</div>
+                <div class="receipt-row" style="font-size: 1.5rem; color: #d32f2f; margin-top: 10px;">
+                    <span>應付金額</span><span>$${o.total}</span>
+                </div>
+                <p style="text-align:center; margin-top:18px; font-size:0.95rem; color:#666; font-weight:bold;">多謝光顧！祝您用餐愉快！</p>`;
+        }
+
+        function downloadReceiptImage() {
+            const key = document.getElementById('receiptSelect').value;
+            if (!key) return alert('請先選擇要下載的單號！');
+
+            const paper = document.getElementById('receiptPaper');
+            html2canvas(paper, { scale: 2 }).then(canvas => {
+                const link = document.createElement('a');
+                link.download = `井家_單號#${localOrders[key].seqNo}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
+    </script>
+</body>
+</html>
