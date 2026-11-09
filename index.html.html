@@ -138,7 +138,7 @@
         }
         .note-tag:active { background: #ff9800; color: white; }
 
-        /* ⏰ 點擊彈出雙滾輪按鈕樣式 */
+        /* ⏰ 點擊彈出時間選擇器觸發按鈕 */
         .time-picker-trigger {
             display: flex; justify-content: space-between; align-items: center;
             background: #e3f2fd; padding: 12px 16px; border-radius: 10px; border: 2px solid #90caf9;
@@ -146,46 +146,31 @@
         }
         .time-picker-trigger:active { background: #bbdefb; }
 
-        /* 🎡 彈出式 3D 慣性滾輪 Modal */
+        /* ⏰ 點擊式按鈕選時 Modal 視窗 */
         .picker-modal-overlay {
             position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
             background: rgba(0,0,0,0.6); z-index: 9500; display: none;
             justify-content: center; align-items: center; padding: 15px;
         }
         .picker-modal-card {
-            background: #f7f7f8; border-radius: 20px; width: 100%; max-width: 340px;
-            padding: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.4); text-align: center;
+            background: white; border-radius: 16px; width: 100%; max-width: 340px;
+            padding: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); text-align: center;
         }
-        .wheels-wrapper {
+        .click-picker-grid {
             display: flex; justify-content: center; align-items: center; gap: 10px; margin: 20px 0;
-            position: relative; perspective: 1000px;
         }
-        .wheel-container {
-            position: relative; height: 200px; width: 110px;
-            background: #ffffff; border-radius: 12px;
-            overflow: hidden; text-align: center; touch-action: none;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.05);
+        .time-column {
+            display: flex; flex-direction: column; align-items: center; gap: 8px; flex: 1;
         }
-        .wheel-list {
-            position: absolute; width: 100%; padding: 0; margin: 0; list-style: none;
-            top: 80px; /* 中點 offset (200/2 - 40/2) */
-            transform-style: preserve-3d;
+        .time-ctrl-btn {
+            width: 100%; background: #e3f2fd; color: #0d47a1; border: 2px solid #90caf9;
+            font-size: 1.5rem; font-weight: bold; padding: 10px 0; border-radius: 8px; cursor: pointer;
         }
-        .wheel-item {
-            height: 40px; line-height: 40px; font-size: 1.3rem; font-weight: 600; color: #888;
-            cursor: pointer; user-select: none; transition: transform 0.1s, opacity 0.1s, color 0.1s;
-            backface-visibility: hidden;
+        .time-ctrl-btn:active { background: #bbdefb; transform: scale(0.95); }
+        .time-display-box {
+            background: #f5f5f5; border: 2px solid #ccc; font-size: 2.2rem; font-weight: 900;
+            color: #d84315; padding: 10px 0; border-radius: 8px; width: 100%; text-align: center;
         }
-        .wheel-item.selected {
-            color: #000; font-size: 1.6rem; font-weight: 900;
-        }
-        /* iOS 玻璃感中框高亮條 */
-        .wheel-highlight-mask {
-            position: absolute; top: 80px; left: 0; width: 100%; height: 40px;
-            border-top: 1px solid rgba(0,0,0,0.15); border-bottom: 1px solid rgba(0,0,0,0.15);
-            background: rgba(0, 0, 0, 0.04); pointer-events: none;
-        }
-        .wheel-label { font-size: 1rem; color: #0d47a1; font-weight: bold; margin-top: 6px; }
 
         .submit-btn { 
             width: 100%; background: #2e7d32; color: white; border: none; padding: 16px; 
@@ -402,10 +387,10 @@
                 <button class="note-tag" onclick="addNoteToSelected('走洋蔥')">+ 走洋蔥</button>
             </div>
 
-            <!-- ⏰ 點擊後彈出雙滾輪的時間按鈕 -->
+            <!-- ⏰ 點擊式時間選擇器按鈕 -->
             <div class="time-picker-trigger" onclick="openTimePickerModal('main')">
                 <span>⏰ 取餐時間：</span>
-                <span id="displayPickupTime" style="font-size: 1.3rem; background: white; padding: 4px 12px; border-radius: 6px; border: 1px solid #90caf9;">12:00</span>
+                <span id="displayPickupTime" style="font-size: 1.3rem; background: white; padding: 4px 12px; border-radius: 6px; border: 1px solid #90caf9;">(不指定)</span>
             </div>
 
             <div style="margin: 8px 0;">
@@ -424,30 +409,35 @@
         </div>
     </div>
 
-    <!-- 🎡 彈出式 iOS 3D 慣性滾輪 Modal -->
+    <!-- ⏰ 點擊式按鈕選時視窗 (Modal) -->
     <div id="timePickerModal" class="picker-modal-overlay">
         <div class="picker-modal-card">
             <h3 style="margin-top:0; color:#0d47a1; font-size:1.3rem;">⏰ 選擇取餐時間</h3>
-            <div class="wheels-wrapper">
-                <!-- 左輪：小時 -->
-                <div>
-                    <div class="wheel-container" id="hourWheel">
-                        <div class="wheel-highlight-mask"></div>
-                        <ul class="wheel-list" id="hourList"></ul>
-                    </div>
-                    <div class="wheel-label">小時</div>
+            
+            <div class="click-picker-grid">
+                <!-- 左側：小時調整 -->
+                <div class="time-column">
+                    <button class="time-ctrl-btn" onclick="adjustTime('hour', 1)">▲</button>
+                    <div class="time-display-box" id="modalHourVal">12</div>
+                    <button class="time-ctrl-btn" onclick="adjustTime('hour', -1)">▼</button>
+                    <div style="font-size:0.9rem; color:#666; font-weight:bold; margin-top:2px;">小時</div>
                 </div>
-                <span style="font-size:2.2rem; font-weight:bold; color:#1976d2; margin-top:-20px;">:</span>
-                <!-- 右輪：分鐘 -->
-                <div>
-                    <div class="wheel-container" id="minWheel">
-                        <div class="wheel-highlight-mask"></div>
-                        <ul class="wheel-list" id="minList"></ul>
-                    </div>
-                    <div class="wheel-label">分鐘</div>
+
+                <span style="font-size:2.2rem; font-weight:bold; color:#1976d2; margin-top:-15px;">:</span>
+
+                <!-- 右側：分鐘調整 (每5分鐘) -->
+                <div class="time-column">
+                    <button class="time-ctrl-btn" onclick="adjustTime('min', 5)">▲</button>
+                    <div class="time-display-box" id="modalMinVal">00</div>
+                    <button class="time-ctrl-btn" onclick="adjustTime('min', -5)">▼</button>
+                    <div style="font-size:0.9rem; color:#666; font-weight:bold; margin-top:2px;">分鐘</div>
                 </div>
             </div>
-            <button onclick="confirmTimeSelection()" style="width:100%; background:#1976d2; color:white; border:none; padding:12px; font-size:1.2rem; font-weight:bold; border-radius:12px; cursor:pointer; margin-top:10px;">確定</button>
+
+            <div style="display:flex; gap:8px;">
+                <button onclick="clearTimeSelection()" style="flex:1; background:#757575; color:white; border:none; padding:12px; font-size:1.1rem; font-weight:bold; border-radius:8px; cursor:pointer;">不指定</button>
+                <button onclick="confirmTimeSelection()" style="flex:2; background:#2e7d32; color:white; border:none; padding:12px; font-size:1.1rem; font-weight:bold; border-radius:8px; cursor:pointer;">確定</button>
+            </div>
         </div>
     </div>
 
@@ -558,7 +548,7 @@
                 <label style="font-weight:bold;">⏰ 修改取餐時間：</label>
                 <div class="time-picker-trigger" onclick="openTimePickerModal('edit')" style="margin-top:4px;">
                     <span>取餐時間：</span>
-                    <span id="displayEditPickupTime" style="font-size: 1.2rem; background: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #90caf9;">12:00</span>
+                    <span id="displayEditPickupTime" style="font-size: 1.2rem; background: white; padding: 4px 10px; border-radius: 6px; border: 1px solid #90caf9;">(不指定)</span>
                 </div>
             </div>
 
@@ -596,9 +586,9 @@
         let historySelectedValue = null;
         let editingCart = [];
 
-        // 輪盤狀態變數
-        let currentHour = 12, currentMin = 0;
-        let editHour = 12, editMin = 0;
+        // 時間數值變數 (null 代表不指定)
+        let currentHour = null, currentMin = null;
+        let editHour = null, editMin = null;
         let activePickerTarget = 'main'; // 'main' 或 'edit'
 
         const MENU_FULL_NAMES = {
@@ -636,7 +626,8 @@
 
         window.addEventListener('DOMContentLoaded', () => {
             document.getElementById('customDatePicker').value = getTodayYMD();
-            setDefaultNearestTime();
+            currentHour = null; currentMin = null; // 預設不指定
+            updateDisplayTimeText('main');
             checkAutoLogin();
         });
 
@@ -647,219 +638,87 @@
             }
         }
 
-        /* 預設最接近現在的時間 */
-        function setDefaultNearestTime() {
+        /* 取得最接近現在的時間（以 5 分鐘為單位） */
+        function getNearestTime() {
             const now = new Date();
             let h = now.getHours();
             let m = Math.round(now.getMinutes() / 5) * 5;
             if (m === 60) { h = (h + 1) % 24; m = 0; }
-            currentHour = h; currentMin = m;
-            updateDisplayTimeText('main');
+            return { h, m };
         }
 
         function updateDisplayTimeText(target) {
-            if (target === 'main') {
-                const str = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
-                document.getElementById('displayPickupTime').innerText = str;
+            const h = (target === 'main') ? currentHour : editHour;
+            const m = (target === 'main') ? currentMin : editMin;
+            const elId = (target === 'main') ? 'displayPickupTime' : 'displayEditPickupTime';
+
+            if (h === null || m === null) {
+                document.getElementById(elId).innerText = '(不指定)';
             } else {
-                const str = `${String(editHour).padStart(2, '0')}:${String(editMin).padStart(2, '0')}`;
-                document.getElementById('displayEditPickupTime').innerText = str;
+                document.getElementById(elId).innerText = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
             }
         }
 
-        /* 開啟彈出式 iOS 滾輪視窗 */
+        /* 開啟點擊式時間調整視窗（自動帶入最接近現在的時間） */
         function openTimePickerModal(target) {
             activePickerTarget = target;
-            const h = (target === 'main') ? currentHour : editHour;
-            const m = (target === 'main') ? currentMin : editMin;
+            let h = (target === 'main') ? currentHour : editHour;
+            let m = (target === 'main') ? currentMin : editMin;
 
-            initIOSWheel('hourList', 0, 23, 1, h, (val) => {
-                if (activePickerTarget === 'main') currentHour = val;
-                else editHour = val;
-            });
-            initIOSWheel('minList', 0, 55, 5, m, (val) => {
-                if (activePickerTarget === 'main') currentMin = val;
-                else editMin = val;
-            });
+            if (h === null || m === null) {
+                const nearest = getNearestTime();
+                h = nearest.h;
+                m = nearest.m;
+                if (target === 'main') { currentHour = h; currentMin = m; }
+                else { editHour = h; editMin = m; }
+            }
 
+            updateModalDisplay();
             document.getElementById('timePickerModal').style.display = 'flex';
+        }
+
+        function updateModalDisplay() {
+            const h = (activePickerTarget === 'main') ? currentHour : editHour;
+            const m = (activePickerTarget === 'main') ? currentMin : editMin;
+            document.getElementById('modalHourVal').innerText = String(h).padStart(2, '0');
+            document.getElementById('modalMinVal').innerText = String(m).padStart(2, '0');
+        }
+
+        function adjustTime(type, delta) {
+            let h = (activePickerTarget === 'main') ? currentHour : editHour;
+            let m = (activePickerTarget === 'main') ? currentMin : editMin;
+
+            if (h === null || m === null) {
+                const nearest = getNearestTime();
+                h = nearest.h; m = nearest.m;
+            }
+
+            if (type === 'hour') {
+                h = (h + delta + 24) % 24;
+            } else {
+                m = (m + delta) % 60;
+                if (m < 0) m += 60;
+            }
+
+            if (activePickerTarget === 'main') { currentHour = h; currentMin = m; }
+            else { editHour = h; editMin = m; }
+
+            updateModalDisplay();
+        }
+
+        function clearTimeSelection() {
+            if (activePickerTarget === 'main') {
+                currentHour = null; currentMin = null;
+            } else {
+                editHour = null; editMin = null;
+            }
+            updateDisplayTimeText(activePickerTarget);
+            document.getElementById('timePickerModal').style.display = 'none';
         }
 
         function confirmTimeSelection() {
             updateDisplayTimeText(activePickerTarget);
             document.getElementById('timePickerModal').style.display = 'none';
-        }
-
-        /* 🚀 核心：iOS 原生手感物理慣性與 3D 滾輪算法 */
-        function initIOSWheel(listId, min, max, step, initialVal, onSelect) {
-            const listEl = document.getElementById(listId);
-            const container = listEl.parentElement;
-            
-            let html = '';
-            const itemsCount = Math.floor((max - min) / step) + 1;
-            for (let i = min; i <= max; i += step) {
-                html += `<li class="wheel-item" data-val="${i}">${String(i).padStart(2, '0')}</li>`;
-            }
-            listEl.innerHTML = html;
-
-            const itemHeight = 40;
-            const minPos = 0;
-            const maxPos = (itemsCount - 1) * itemHeight;
-
-            let currentY = -((initialVal - min) / step) * itemHeight;
-            let startY = 0;
-            let lastY = 0;
-            let velocity = 0;
-            let lastTime = Date.now();
-            let isDragging = false;
-            let animId = null;
-
-            function update3DEffect() {
-                const items = listEl.querySelectorAll('.wheel-item');
-                const centerOffset = -currentY;
-                
-                items.forEach((item, index) => {
-                    const itemPos = index * itemHeight;
-                    const diff = itemPos - centerOffset; // 距離中央高度
-                    const rotateX = Math.max(-60, Math.min(60, (diff / itemHeight) * -22)); // 3D 傾斜角度
-                    const opacity = Math.max(0.2, 1 - Math.abs(diff) / (itemHeight * 3.5)); // 漸隱效果
-                    const scale = Math.max(0.8, 1 - Math.abs(diff) / (itemHeight * 10)); // 縮放效果
-
-                    item.style.transform = `rotateX(${rotateX}deg) scale(${scale})`;
-                    item.style.opacity = opacity;
-
-                    if (Math.abs(diff) < itemHeight / 2) {
-                        item.classList.add('selected');
-                        onSelect(min + index * step);
-                    } else {
-                        item.classList.remove('selected');
-                    }
-                });
-
-                listEl.style.transform = `translateY(${currentY}px)`;
-            }
-
-            function snapToNearest() {
-                const index = Math.round(-currentY / itemHeight);
-                const targetY = -Math.max(0, Math.min(itemsCount - 1, index)) * itemHeight;
-
-                cancelAnimationFrame(animId);
-                const startTime = Date.now();
-                const duration = 200; // 200ms 吸附對齊
-                const startYPos = currentY;
-
-                function animateSnap() {
-                    const elapsed = Date.now() - startTime;
-                    const progress = Math.min(1, elapsed / duration);
-                    // easeOutCubic
-                    const ease = 1 - Math.pow(1 - progress, 3);
-                    currentY = startYPos + (targetY - startYPos) * ease;
-                    update3DEffect();
-
-                    if (progress < 1) {
-                        animId = requestAnimationFrame(animateSnap);
-                    }
-                }
-                animId = requestAnimationFrame(animateSnap);
-            }
-
-            function inertiaDeceleration() {
-                cancelAnimationFrame(animId);
-                
-                function stepInertia() {
-                    velocity *= 0.94; // 阻尼減速
-                    currentY += velocity;
-
-                    // 邊界回彈限制
-                    if (currentY > minPos) {
-                        currentY = minPos;
-                        velocity = 0;
-                    } else if (currentY < -maxPos) {
-                        currentY = -maxPos;
-                        velocity = 0;
-                    }
-
-                    update3DEffect();
-
-                    if (Math.abs(velocity) > 0.5) {
-                        animId = requestAnimationFrame(stepInertia);
-                    } else {
-                        snapToNearest();
-                    }
-                }
-                animId = requestAnimationFrame(stepInertia);
-            }
-
-            // 觸控與滑鼠 Event
-            function onStart(y) {
-                isDragging = true;
-                startY = y;
-                lastY = y;
-                velocity = 0;
-                lastTime = Date.now();
-                cancelAnimationFrame(animId);
-            }
-
-            function onMove(y) {
-                if (!isDragging) return;
-                const now = Date.now();
-                const deltaY = y - lastY;
-                const deltaTime = now - lastTime || 16;
-
-                velocity = (deltaY / deltaTime) * 16; // 計算拋滑速度
-                currentY += deltaY;
-
-                // 越界阻尼感
-                if (currentY > minPos) currentY = minPos + (currentY - minPos) * 0.3;
-                if (currentY < -maxPos) currentY = -maxPos + (currentY + maxPos) * 0.3;
-
-                lastY = y;
-                lastTime = now;
-                update3DEffect();
-            }
-
-            function onEnd() {
-                if (!isDragging) return;
-                isDragging = false;
-                if (Math.abs(velocity) > 2) {
-                    inertiaDeceleration();
-                } else {
-                    snapToNearest();
-                }
-            }
-
-            // Touch
-            container.ontouchstart = (e) => onStart(e.touches[0].clientY);
-            container.ontouchmove = (e) => {
-                e.preventDefault();
-                onMove(e.touches[0].clientY);
-            };
-            container.ontouchend = onEnd;
-
-            // Mouse
-            container.onmousedown = (e) => { e.preventDefault(); onStart(e.clientY); };
-            window.onmousemove = (e) => { if (isDragging) onMove(e.clientY); };
-            window.onmouseup = () => { if (isDragging) onEnd(); };
-
-            // Wheel (鍵盤與滑鼠輪盤)
-            container.onwheel = (e) => {
-                e.preventDefault();
-                currentY -= e.deltaY > 0 ? itemHeight : -itemHeight;
-                currentY = Math.max(-maxPos, Math.min(minPos, currentY));
-                snapToNearest();
-            };
-
-            // 點擊直接選擇
-            listEl.onclick = (e) => {
-                const item = e.target.closest('.wheel-item');
-                if (item && item.dataset.val !== undefined) {
-                    const val = parseInt(item.dataset.val, 10);
-                    currentY = -((val - min) / step) * itemHeight;
-                    snapToNearest();
-                }
-            };
-
-            update3DEffect();
         }
 
         function getTodayYMD(ts) {
@@ -995,7 +854,10 @@
             const timeStr = now.getHours().toString().padStart(2, '0') + ':' + now.getMinutes().toString().padStart(2, '0');
             const dateStr = getTodayYMD(now.getTime());
 
-            const pickupTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
+            let pickupTimeStr = null;
+            if (currentHour !== null && currentMin !== null) {
+                pickupTimeStr = `${String(currentHour).padStart(2, '0')}:${String(currentMin).padStart(2, '0')}`;
+            }
             const remarkStr = document.getElementById('orderRemarkInput').value.trim();
 
             const orderData = {
@@ -1022,7 +884,8 @@
             cart = [];
             selectedCartIndex = -1;
             document.getElementById('orderRemarkInput').value = '';
-            setDefaultNearestTime();
+            currentHour = null; currentMin = null;
+            updateDisplayTimeText('main');
             renderCart();
             document.getElementById('nextSeq').innerText = String(currentMaxSeq + 1).padStart(3, '0');
         }
@@ -1056,8 +919,10 @@
 
             if (order.pickupTime && order.pickupTime.includes(':')) {
                 const parts = order.pickupTime.split(':');
-                editHour = parseInt(parts[0], 10) || 12;
-                editMin = parseInt(parts[1], 10) || 0;
+                editHour = parseInt(parts[0], 10);
+                editMin = parseInt(parts[1], 10);
+            } else {
+                editHour = null; editMin = null;
             }
             updateDisplayTimeText('edit');
 
@@ -1115,7 +980,10 @@
             if (editingCart.length === 0) return alert('修改後的訂單不能沒有餐點！');
 
             const total = document.getElementById('editTotalPrice').innerText;
-            const pickupTimeStr = `${String(editHour).padStart(2, '0')}:${String(editMin).padStart(2, '0')}`;
+            let pickupTimeStr = null;
+            if (editHour !== null && editMin !== null) {
+                pickupTimeStr = `${String(editHour).padStart(2, '0')}:${String(editMin).padStart(2, '0')}`;
+            }
             const remark = document.getElementById('editOrderRemarkInput').value.trim();
 
             const updates = { 
@@ -1147,7 +1015,7 @@
 
         function renderAllViews(data) {
             localOrders = data || {};
-            let kitchenHtml = '', passHtml = '', selectOptions = '<option value="">-- 請選擇訂單 --</option>';
+            let selectOptions = '<option value="">-- 請選擇訂單 --</option>';
             const todayStart = getTodayStartTimestamp();
 
             let maxSeqToday = 0;
@@ -1165,6 +1033,25 @@
                 const o = localOrders[k];
                 return o && (o.timestamp ? o.timestamp >= todayStart : true);
             });
+
+            // 💡 根據原則排序訂單：
+            // 1. 未完成優先於完成
+            // 2. 大號碼優先於小號碼（降序：大號碼在前）
+            todayKeys.sort((a, b) => {
+                const oA = localOrders[a];
+                const oB = localOrders[b];
+                
+                const isDoneA = (oA.status !== 'pending' || oA.isDeleted);
+                const isDoneB = (oB.status !== 'pending' || oB.isDeleted);
+
+                if (isDoneA !== isDoneB) {
+                    return isDoneA ? 1 : -1; // 未完成排在前面
+                }
+                // 號碼大的排在前面
+                return parseInt(oB.seqNo || 0, 10) - parseInt(oA.seqNo || 0, 10);
+            });
+
+            let kitchenHtml = '', passHtml = '';
 
             todayKeys.forEach(k => {
                 const o = localOrders[k];
@@ -1198,6 +1085,7 @@
                     </div>`;
                 }
 
+                // 💡 只有當 o.pickupTime 有值時才在單上顯示取餐時間
                 const pickupBadge = o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間：${o.pickupTime}</div>` : '';
 
                 // 廚房卡片
