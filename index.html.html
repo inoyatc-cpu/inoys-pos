@@ -537,19 +537,32 @@
                 </div>
             </div>
 
-            <!-- 🕒 時段分析區塊 (3點前 vs 3點後) -->
+            <!-- 🕒 時段分析區塊 (可自由選擇分界時間) -->
             <div class="stats-box" style="background: #e3f2fd; border: 2px solid #90caf9;">
-                <h3 style="margin-top:0; color:#0d47a1; border-bottom:2px solid #1976d2; padding-bottom:8px;">🕒 時段分析 (15:00 分界)</h3>
-                <div style="display: flex; justify-content: space-around; text-align: center; margin: 15px 0;">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #1976d2; padding-bottom: 8px; margin-bottom: 10px;">
+                    <h3 style="margin:0; color:#0d47a1; font-size: 1.15rem;">🕒 時段分析</h3>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 0.95rem; font-weight: bold; color: #1565c0;">分界點：</span>
+                        <select id="timeBoundarySelect" onchange="renderStats()" style="padding: 4px 8px; font-size: 1rem; border-radius: 6px; border: 1px solid #1976d2; font-weight: bold; background: white; color: #0d47a1; outline: none;">
+                            <option value="14:00">14:00 (2點)</option>
+                            <option value="14:30">14:30 (2:30)</option>
+                            <option value="15:00" selected>15:00 (3點)</option>
+                            <option value="15:30">15:30 (3:30)</option>
+                            <option value="16:00">16:00 (4點)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="display: flex; justify-content: space-around; text-align: center; margin: 10px 0;">
                     <div style="flex: 1; border-right: 2px solid #bbdefb; padding-right: 10px;">
-                        <div style="font-size: 1rem; color: #1565c0; font-weight: bold;">☀️ 3點前 (15:00前)</div>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: #2e7d32; margin-top: 5px;" id="statBefore3">$0</div>
-                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countBefore3">0 單</div>
+                        <div style="font-size: 1rem; color: #1565c0; font-weight: bold;" id="labelBeforeBoundary">☀️ 早期時段</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #2e7d32; margin-top: 5px;" id="statBeforeBoundary">$0</div>
+                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countBeforeBoundary">0 單</div>
                     </div>
                     <div style="flex: 1; padding-left: 10px;">
-                        <div style="font-size: 1rem; color: #e65100; font-weight: bold;">🌙 3點後 (15:00後)</div>
-                        <div style="font-size: 1.5rem; font-weight: 900; color: #d84315; margin-top: 5px;" id="statAfter3">$0</div>
-                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countAfter3">0 單</div>
+                        <div style="font-size: 1rem; color: #e65100; font-weight: bold;" id="labelAfterBoundary">🌙 晚期時段</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #d84315; margin-top: 5px;" id="statAfterBoundary">$0</div>
+                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countAfterBoundary">0 單</div>
                     </div>
                 </div>
             </div>
@@ -1320,9 +1333,18 @@
                 }
             }
 
+            // 取得所選的分界時間 (例如 "15:00" -> 分割成 小時與分鐘)
+            const boundaryVal = document.getElementById('timeBoundarySelect').value;
+            const [bHour, bMin] = boundaryVal.split(':').map(Number);
+            const boundaryMinutes = bHour * 60 + (bMin || 0);
+
+            // 更新介面標籤提示
+            document.getElementById('labelBeforeBoundary').innerText = `☀️ ${boundaryVal} 前`;
+            document.getElementById('labelAfterBoundary').innerText = `🌙 ${boundaryVal} 後`;
+
             let totalRev = 0, count = 0;
-            let revBefore3 = 0, countBefore3 = 0;
-            let revAfter3 = 0, countAfter3 = 0;
+            let revBefore = 0, countBefore = 0;
+            let revAfter = 0, countAfter = 0;
 
             const itemCounts = {};
             const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '意粉': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '加料/其他': { qty: 0, rev: 0 } };
@@ -1334,20 +1356,25 @@
                     totalRev += orderTotal;
                     count++;
 
-                    // 判斷下單時間是 3 點 (15:00) 前還是後
-                    let orderHour = 0;
+                    // 計算訂單的時間（分鐘數）
+                    let orderH = 0, orderM = 0;
                     if (o.time && o.time.includes(':')) {
-                        orderHour = parseInt(o.time.split(':')[0], 10);
+                        const parts = o.time.split(':').map(Number);
+                        orderH = parts[0];
+                        orderM = parts[1] || 0;
                     } else if (o.timestamp) {
-                        orderHour = new Date(o.timestamp).getHours();
+                        const d = new Date(o.timestamp);
+                        orderH = d.getHours();
+                        orderM = d.getMinutes();
                     }
+                    const orderMinutes = orderH * 60 + orderM;
 
-                    if (orderHour < 15) {
-                        revBefore3 += orderTotal;
-                        countBefore3++;
+                    if (orderMinutes < boundaryMinutes) {
+                        revBefore += orderTotal;
+                        countBefore++;
                     } else {
-                        revAfter3 += orderTotal;
-                        countAfter3++;
+                        revAfter += orderTotal;
+                        countAfter++;
                     }
 
                     (o.items || []).forEach(it => {
@@ -1373,11 +1400,11 @@
             document.getElementById('statRevenue').innerText = `$${totalRev}`;
             document.getElementById('statCount').innerText = `${count} 單`;
 
-            // 填入時段分析數據
-            document.getElementById('statBefore3').innerText = `$${revBefore3}`;
-            document.getElementById('countBefore3').innerText = `${countBefore3} 單`;
-            document.getElementById('statAfter3').innerText = `$${revAfter3}`;
-            document.getElementById('countAfter3').innerText = `${countAfter3} 單`;
+            // 填入動態分界時段數據
+            document.getElementById('statBeforeBoundary').innerText = `$${revBefore}`;
+            document.getElementById('countBeforeBoundary').innerText = `${countBefore} 單`;
+            document.getElementById('statAfterBoundary').innerText = `$${revAfter}`;
+            document.getElementById('countAfterBoundary').innerText = `${countAfter} 單`;
 
             let catHtml = '';
             Object.keys(categoryStats).forEach(cName => {
