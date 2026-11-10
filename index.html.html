@@ -537,6 +537,23 @@
                 </div>
             </div>
 
+            <!-- 🕒 時段分析區塊 (3點前 vs 3點後) -->
+            <div class="stats-box" style="background: #e3f2fd; border: 2px solid #90caf9;">
+                <h3 style="margin-top:0; color:#0d47a1; border-bottom:2px solid #1976d2; padding-bottom:8px;">🕒 時段分析 (15:00 分界)</h3>
+                <div style="display: flex; justify-content: space-around; text-align: center; margin: 15px 0;">
+                    <div style="flex: 1; border-right: 2px solid #bbdefb; padding-right: 10px;">
+                        <div style="font-size: 1rem; color: #1565c0; font-weight: bold;">☀️ 3點前 (15:00前)</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #2e7d32; margin-top: 5px;" id="statBefore3">$0</div>
+                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countBefore3">0 單</div>
+                    </div>
+                    <div style="flex: 1; padding-left: 10px;">
+                        <div style="font-size: 1rem; color: #e65100; font-weight: bold;">🌙 3點後 (15:00後)</div>
+                        <div style="font-size: 1.5rem; font-weight: 900; color: #d84315; margin-top: 5px;" id="statAfter3">$0</div>
+                        <div style="font-size: 0.95rem; color: #555; margin-top: 2px;" id="countAfter3">0 單</div>
+                    </div>
+                </div>
+            </div>
+
             <div class="stats-box">
                 <h3 style="margin-top:0; color:#333; border-bottom:2px solid #6a1b9a; padding-bottom:8px;">📁 分類銷售統計</h3>
                 <table class="stats-table">
@@ -1092,11 +1109,6 @@
                 return o && (o.timestamp ? o.timestamp >= todayStart : true);
             });
 
-            // 💡 依照你的全新排序規則排序訂單：
-            // 1. 第一優先：未完成優先於已完成
-            //    - 同為未完成：小號碼優先於大號碼 (升序：001, 002...)
-            // 2. 第二優先：已完成（或已刪除）
-            //    - 同為已完成：大號碼優先於小號碼 (降序：005, 004...)
             todayKeys.sort((a, b) => {
                 const oA = localOrders[a];
                 const oB = localOrders[b];
@@ -1105,17 +1117,15 @@
                 const isDoneB = (oB.status !== 'pending' || oB.isDeleted);
 
                 if (isDoneA !== isDoneB) {
-                    return isDoneA ? 1 : -1; // 未完成排在前面
+                    return isDoneA ? 1 : -1;
                 }
 
                 const seqA = parseInt(oA.seqNo || 0, 10);
                 const seqB = parseInt(oB.seqNo || 0, 10);
 
                 if (!isDoneA) {
-                    // 兩者皆為「未完成」：小號碼優先於大號碼 (升序)
                     return seqA - seqB;
                 } else {
-                    // 兩者皆為「已完成」：大號碼優先於小號碼 (降序)
                     return seqB - seqA;
                 }
             });
@@ -1156,7 +1166,6 @@
 
                 const pickupBadge = o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間：${o.pickupTime}</div>` : '';
 
-                // 廚房卡片
                 kitchenHtml += `
                     <div class="order-card ${isDel ? 'deleted-card' : (o.status !== 'pending' ? 'completed' : '')}">
                         <div class="card-header">
@@ -1182,7 +1191,6 @@
                         ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
                     </div>`;
 
-                // 出餐卡片 (針對出餐頁面的已完成狀態判斷)
                 const isPassReady = (o.passStatus === 'ready');
                 passHtml += `
                     <div class="order-card ${isDel ? 'deleted-card' : (isPassReady ? 'completed' : '')}">
@@ -1313,14 +1321,34 @@
             }
 
             let totalRev = 0, count = 0;
+            let revBefore3 = 0, countBefore3 = 0;
+            let revAfter3 = 0, countAfter3 = 0;
+
             const itemCounts = {};
             const categoryStats = { '丼飯': { qty: 0, rev: 0 }, '意粉': { qty: 0, rev: 0 }, '小食': { qty: 0, rev: 0 }, '跟餐飲品': { qty: 0, rev: 0 }, '飲品': { qty: 0, rev: 0 }, '加料/其他': { qty: 0, rev: 0 } };
 
             Object.keys(localOrders).forEach(k => {
                 const o = localOrders[k];
                 if (o && !o.isDeleted && o.timestamp && o.timestamp >= startTime && o.timestamp <= endTime) {
-                    totalRev += parseFloat(o.total || 0);
+                    const orderTotal = parseFloat(o.total || 0);
+                    totalRev += orderTotal;
                     count++;
+
+                    // 判斷下單時間是 3 點 (15:00) 前還是後
+                    let orderHour = 0;
+                    if (o.time && o.time.includes(':')) {
+                        orderHour = parseInt(o.time.split(':')[0], 10);
+                    } else if (o.timestamp) {
+                        orderHour = new Date(o.timestamp).getHours();
+                    }
+
+                    if (orderHour < 15) {
+                        revBefore3 += orderTotal;
+                        countBefore3++;
+                    } else {
+                        revAfter3 += orderTotal;
+                        countAfter3++;
+                    }
 
                     (o.items || []).forEach(it => {
                         const fullName = MENU_FULL_NAMES[it.name] || it.name;
@@ -1344,6 +1372,12 @@
 
             document.getElementById('statRevenue').innerText = `$${totalRev}`;
             document.getElementById('statCount').innerText = `${count} 單`;
+
+            // 填入時段分析數據
+            document.getElementById('statBefore3').innerText = `$${revBefore3}`;
+            document.getElementById('countBefore3').innerText = `${countBefore3} 單`;
+            document.getElementById('statAfter3').innerText = `$${revAfter3}`;
+            document.getElementById('countAfter3').innerText = `${countAfter3} 單`;
 
             let catHtml = '';
             Object.keys(categoryStats).forEach(cName => {
