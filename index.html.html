@@ -1122,7 +1122,8 @@
                 return o && (o.timestamp ? o.timestamp >= todayStart : true);
             });
 
-            todayKeys.sort((a, b) => {
+            // 💡 針對廚房的排序器 (獨立排序)
+            const kitchenKeys = [...todayKeys].sort((a, b) => {
                 const oA = localOrders[a];
                 const oB = localOrders[b];
                 
@@ -1130,51 +1131,70 @@
                 const isDoneB = (oB.status !== 'pending' || oB.isDeleted);
 
                 if (isDoneA !== isDoneB) {
-                    return isDoneA ? 1 : -1;
+                    return isDoneA ? 1 : -1; // 未完成排在前面
                 }
 
                 const seqA = parseInt(oA.seqNo || 0, 10);
                 const seqB = parseInt(oB.seqNo || 0, 10);
 
                 if (!isDoneA) {
-                    return seqA - seqB;
+                    return seqA - seqB; // 未完成：小號碼優先於大號碼
                 } else {
-                    return seqB - seqA;
+                    return seqB - seqA; // 已完成：大號碼優先於小號碼
+                }
+            });
+
+            // 💡 針對出餐的排序器 (獨立排序，依 passStatus 判斷)
+            const passKeys = [...todayKeys].sort((a, b) => {
+                const oA = localOrders[a];
+                const oB = localOrders[b];
+                
+                const isDoneA = (oA.passStatus !== 'pending' || oA.isDeleted);
+                const isDoneB = (oB.passStatus !== 'pending' || oB.isDeleted);
+
+                if (isDoneA !== isDoneB) {
+                    return isDoneA ? 1 : -1; // 未完成排在前面
+                }
+
+                const seqA = parseInt(oA.seqNo || 0, 10);
+                const seqB = parseInt(oB.seqNo || 0, 10);
+
+                if (!isDoneA) {
+                    return seqA - seqB; // 未完成：小號碼優先於大號碼
+                } else {
+                    return seqB - seqA; // 已完成：大號碼優先於小號碼
                 }
             });
 
             let kitchenHtml = '', passHtml = '';
 
-            todayKeys.forEach(k => {
+            // 用於明細下拉選單的列表
+            todayKeys.sort((a, b) => parseInt(localOrders[b].seqNo || 0, 10) - parseInt(localOrders[a].seqNo || 0, 10)).forEach(k => {
+                const o = localOrders[k];
+                if (!o.isDeleted) {
+                    selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
+                }
+            });
+
+            // 渲染廚房卡片
+            kitchenKeys.forEach(k => {
                 const o = localOrders[k];
                 const isDel = o.isDeleted === true;
                 const rawJson = JSON.stringify({ id: k, ...o }).replace(/'/g, "&apos;");
 
-                if (!isDel) {
-                    selectOptions += `<option value="${k}">單號 #${o.seqNo} (${o.time} - $${o.total})</option>`;
-                }
-
                 let itemsStr = '';
                 (o.items || []).forEach(it => {
-                    itemsStr += `<div class="card-main-row ${it.bgClass}">
-                        <span>${it.name}</span>
-                    </div>`;
+                    itemsStr += `<div class="card-main-row ${it.bgClass}"><span>${it.name}</span></div>`;
                     (it.modifiers || []).forEach(m => {
-                        itemsStr += `<div class="card-sub-row ${m.bgClass || 'bg-other'}">
-                            <span>↳ ${m.name}</span><span>+$${m.price}</span>
-                        </div>`;
+                        itemsStr += `<div class="card-sub-row ${m.bgClass || 'bg-other'}"><span>↳ ${m.name}</span><span>+$${m.price}</span></div>`;
                     });
                     if (it.notes && it.notes.length > 0) {
-                        itemsStr += `<div class="card-sub-row bg-note">
-                            <span>↳ 備註: ${it.notes.join(', ')}</span>
-                        </div>`;
+                        itemsStr += `<div class="card-sub-row bg-note"><span>↳ 備註: ${it.notes.join(', ')}</span></div>`;
                     }
                 });
 
                 if (o.remark) {
-                    itemsStr += `<div class="card-sub-row bg-note" style="border-left-color:red;">
-                        <span>📝 全單備註: ${o.remark}</span>
-                    </div>`;
+                    itemsStr += `<div class="card-sub-row bg-note" style="border-left-color:red;"><span>📝 全單備註: ${o.remark}</span></div>`;
                 }
 
                 const pickupBadge = o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間：${o.pickupTime}</div>` : '';
@@ -1203,8 +1223,32 @@
                             </button>
                         ` : '<div style="text-align:center; color:#777; font-weight:bold; padding:8px;">此訂單已廢棄</div>'}
                     </div>`;
+            });
 
+            // 渲染出餐卡片
+            passKeys.forEach(k => {
+                const o = localOrders[k];
+                const isDel = o.isDeleted === true;
+                const rawJson = JSON.stringify({ id: k, ...o }).replace(/'/g, "&apos;");
                 const isPassReady = (o.passStatus === 'ready');
+
+                let itemsStr = '';
+                (o.items || []).forEach(it => {
+                    itemsStr += `<div class="card-main-row ${it.bgClass}"><span>${it.name}</span></div>`;
+                    (it.modifiers || []).forEach(m => {
+                        itemsStr += `<div class="card-sub-row ${m.bgClass || 'bg-other'}"><span>↳ ${m.name}</span><span>+$${m.price}</span></div>`;
+                    });
+                    if (it.notes && it.notes.length > 0) {
+                        itemsStr += `<div class="card-sub-row bg-note"><span>↳ 備註: ${it.notes.join(', ')}</span></div>`;
+                    }
+                });
+
+                if (o.remark) {
+                    itemsStr += `<div class="card-sub-row bg-note" style="border-left-color:red;"><span>📝 全單備註: ${o.remark}</span></div>`;
+                }
+
+                const pickupBadge = o.pickupTime ? `<div class="card-pickup-time">⏰ 取餐時間：${o.pickupTime}</div>` : '';
+
                 passHtml += `
                     <div class="order-card ${isDel ? 'deleted-card' : (isPassReady ? 'completed' : '')}">
                         <div class="card-header">
@@ -1333,12 +1377,10 @@
                 }
             }
 
-            // 取得所選的分界時間 (例如 "15:00" -> 分割成 小時與分鐘)
             const boundaryVal = document.getElementById('timeBoundarySelect').value;
             const [bHour, bMin] = boundaryVal.split(':').map(Number);
             const boundaryMinutes = bHour * 60 + (bMin || 0);
 
-            // 更新介面標籤提示
             document.getElementById('labelBeforeBoundary').innerText = `☀️ ${boundaryVal} 前`;
             document.getElementById('labelAfterBoundary').innerText = `🌙 ${boundaryVal} 後`;
 
@@ -1356,7 +1398,6 @@
                     totalRev += orderTotal;
                     count++;
 
-                    // 計算訂單的時間（分鐘數）
                     let orderH = 0, orderM = 0;
                     if (o.time && o.time.includes(':')) {
                         const parts = o.time.split(':').map(Number);
@@ -1400,7 +1441,6 @@
             document.getElementById('statRevenue').innerText = `$${totalRev}`;
             document.getElementById('statCount').innerText = `${count} 單`;
 
-            // 填入動態分界時段數據
             document.getElementById('statBeforeBoundary').innerText = `$${revBefore}`;
             document.getElementById('countBeforeBoundary').innerText = `${countBefore} 單`;
             document.getElementById('statAfterBoundary').innerText = `$${revAfter}`;
